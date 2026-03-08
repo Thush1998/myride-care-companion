@@ -73,7 +73,7 @@ const Index = () => {
         ) : (
           <>
             {activeTab === 'dashboard' && <DashboardView vehicle={selectedVehicle} />}
-            {activeTab === 'anatomy' && <AnatomyView vehicle={selectedVehicle} services={(() => { const { data } = useServiceLogs(selectedVehicle.id); return data || []; })()} />}
+            {activeTab === 'anatomy' && <AnatomyViewWrapper vehicle={selectedVehicle} />}
             {activeTab === 'services' && <ServiceLogsView vehicle={selectedVehicle} />}
             {activeTab === 'fuel' && <FuelLogView vehicle={selectedVehicle} />}
             {activeTab === 'documents' && <DocumentsView vehicle={selectedVehicle} />}
