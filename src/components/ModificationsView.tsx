@@ -124,7 +124,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.mod_date} onChange={e => setForm(f => ({ ...f, mod_date: e.target.value }))} className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Cost ($)</Label><Input type="number" step="0.01" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="350" className="bg-input border-border font-mono" /></div>
+              <div><Label className="text-muted-foreground">Cost (Rs.)</Label><Input type="number" step="0.01" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="350" className="bg-input border-border font-mono" /></div>
             </div>
             <div>
               <Label className="text-muted-foreground">Wiring Notes / Technical Details</Label>
