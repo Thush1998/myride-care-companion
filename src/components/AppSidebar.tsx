@@ -85,7 +85,7 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
-          ))
+          ))}
           {vehicles.length === 0 && <p className="px-3 py-4 text-center font-mono text-xs text-muted-foreground">No vehicles yet. Add one!</p>}
         </div>
 
