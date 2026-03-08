@@ -95,6 +95,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     setEditForm({
       make: vehicle.make, model: vehicle.model, year: String(vehicle.year),
       plate_no: vehicle.plate_no, color: vehicle.color || '', nickname: vehicle.nickname || '',
+      category: vehicle.category || 'car',
     });
     setEditOpen(true);
   };
