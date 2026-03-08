@@ -27,6 +27,19 @@ const tabs = [
 
 const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle, activeTab, onTabChange }: AppSidebarProps) => {
   const { signOut, user } = useAuth();
+  const deleteVehicle = useDeleteVehicle();
+
+  const handleDelete = async (e: React.MouseEvent, v: Vehicle) => {
+    e.stopPropagation();
+    if (!confirm(`Remove "${v.nickname || `${v.make} ${v.model}`}" from your garage? All related data will be deleted.`)) return;
+    try {
+      await deleteVehicle.mutateAsync(v.id);
+      if (selectedVehicleId === v.id) onSelectVehicle('');
+      toast.success('Vehicle removed');
+    } catch {
+      toast.error('Failed to remove vehicle');
+    }
+  };
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
