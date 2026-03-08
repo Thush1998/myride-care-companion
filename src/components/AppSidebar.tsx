@@ -1,7 +1,8 @@
-import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Settings2, Zap, Activity } from 'lucide-react';
-import { Vehicle } from '@/hooks/useVehicles';
+import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Settings2, Zap, Activity, Trash2 } from 'lucide-react';
+import { Vehicle, useDeleteVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import autoDocLogo from '@/assets/autodoc-logo.png';
 
 interface AppSidebarProps {
@@ -26,6 +27,19 @@ const tabs = [
 
 const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle, activeTab, onTabChange }: AppSidebarProps) => {
   const { signOut, user } = useAuth();
+  const deleteVehicle = useDeleteVehicle();
+
+  const handleDelete = async (e: React.MouseEvent, v: Vehicle) => {
+    e.stopPropagation();
+    if (!confirm(`Remove "${v.nickname || `${v.make} ${v.model}`}" from your garage? All related data will be deleted.`)) return;
+    try {
+      await deleteVehicle.mutateAsync(v.id);
+      if (selectedVehicleId === v.id) onSelectVehicle('');
+      toast.success('Vehicle removed');
+    } catch {
+      toast.error('Failed to remove vehicle');
+    }
+  };
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
@@ -48,21 +62,29 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
 
         <div className="mb-4 space-y-1">
           {vehicles.map(v => (
-            <button key={v.id} onClick={() => onSelectVehicle(v.id)}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all",
-                selectedVehicleId === v.id ? "bg-primary/10 text-primary neon-border glow-cyan" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
-              )}>
-              {v.image_url ? (
-                <img src={v.image_url} alt={v.make} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
-              ) : (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary"><Car className="h-4 w-4" /></div>
-              )}
-              <div className="min-w-0">
-                <div className="truncate font-medium">{v.nickname || `${v.make} ${v.model}`}</div>
-                <div className="truncate font-mono text-xs opacity-70">{v.plate_no} · {v.year}</div>
-              </div>
-            </button>
+            <div key={v.id} className="group relative">
+              <button onClick={() => onSelectVehicle(v.id)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-all",
+                  selectedVehicleId === v.id ? "bg-primary/10 text-primary neon-border glow-cyan" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}>
+                {v.image_url ? (
+                  <img src={v.image_url} alt={v.make} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary"><Car className="h-4 w-4" /></div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-medium">{v.nickname || `${v.make} ${v.model}`}</div>
+                  <div className="truncate font-mono text-xs opacity-70">{v.plate_no} · {v.year}</div>
+                </div>
+              </button>
+              <button
+                onClick={(e) => handleDelete(e, v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground/0 transition-all group-hover:text-muted-foreground hover:!bg-destructive/10 hover:!text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
           {vehicles.length === 0 && <p className="px-3 py-4 text-center font-mono text-xs text-muted-foreground">No vehicles yet. Add one!</p>}
         </div>
