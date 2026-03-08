@@ -71,50 +71,60 @@ const VehicleHistory = () => {
       try {
         console.log('[VehicleHistory] Public fetch for vehicle ID:', vehicleId);
 
-        const { data, error: fnError } = await supabase.functions.invoke('public-vehicle', {
-          body: { id: vehicleId },
-        });
+        const backendCandidates = [
+          import.meta.env.VITE_SUPABASE_URL?.trim(),
+          import.meta.env.VITE_SUPABASE_PROJECT_ID ? `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co` : undefined,
+          'https://vpgebrgwuneqgrprhoxg.supabase.co',
+        ].filter((url, index, arr): url is string => !!url && arr.indexOf(url) === index);
 
-        console.log('[VehicleHistory] Function response:', { data, error: fnError });
-
-        if (fnError) {
-          let detailedError = fnError.message || 'Failed to load vehicle data';
-          const responseContext = (fnError as any)?.context;
-
-          if (responseContext instanceof Response) {
-            try {
-              const payload = await responseContext.clone().json();
-              detailedError = payload?.error || payload?.message || detailedError;
-            } catch {
-              try {
-                const textPayload = await responseContext.text();
-                if (textPayload) detailedError = textPayload;
-              } catch {
-                // ignore
-              }
-            }
-          }
-
-          setError(detailedError);
-          setLoading(false);
-          return;
-        }
-
-        const payload = (data || {}) as {
+        let payload: {
           error?: string;
           vehicle?: any;
           services?: any[];
           modifications?: any[];
-        };
+        } | null = null;
+        let detailedError = 'Failed to load vehicle data';
 
-        if (payload.error) {
-          setError(payload.error);
-          setLoading(false);
-          return;
+        for (const backendUrl of backendCandidates) {
+          const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
+          console.log('[VehicleHistory] Trying public endpoint:', endpoint);
+
+          try {
+            const response = await fetch(endpoint, { method: 'GET' });
+            const rawBody = await response.text();
+
+            let parsed: any = null;
+            if (rawBody) {
+              try {
+                parsed = JSON.parse(rawBody);
+              } catch {
+                parsed = null;
+              }
+            }
+
+            if (!response.ok) {
+              detailedError = parsed?.error || parsed?.message || rawBody || `Request failed (${response.status})`;
+              console.error('[VehicleHistory] Endpoint error:', { endpoint, status: response.status, detailedError });
+              continue;
+            }
+
+            payload = parsed ?? {};
+            if (payload.error) {
+              detailedError = payload.error;
+              continue;
+            }
+
+            break;
+          } catch (error) {
+            detailedError = error instanceof Error ? error.message : 'Network error';
+            console.error('[VehicleHistory] Endpoint fetch failed:', { endpoint, error });
+          }
         }
 
-        if (!payload.vehicle) {
-          setError('Vehicle not found');
+        console.log('[VehicleHistory] Function response payload:', payload);
+
+        if (!payload?.vehicle) {
+          setError(detailedError || 'Vehicle not found');
           setLoading(false);
           return;
         }
