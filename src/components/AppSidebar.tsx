@@ -2,6 +2,7 @@ import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Sett
 import { Vehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import autoDocLogo from '@/assets/autodoc-logo.png';
 
 interface AppSidebarProps {
   vehicles: Vehicle[];
