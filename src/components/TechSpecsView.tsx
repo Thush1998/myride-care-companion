@@ -10,13 +10,28 @@ interface TechSpecsViewProps {
   vehicle: Vehicle;
 }
 
-const FIELDS = [
+const IDENTITY_FIELDS = [
   { key: 'chassis_number', label: 'Chassis Number', placeholder: 'e.g. V45W-0123456' },
   { key: 'engine_number', label: 'Engine Number', placeholder: 'e.g. 6G72-AX1234' },
   { key: 'paint_code', label: 'Paint Code', placeholder: 'e.g. A31 Ivory White' },
   { key: 'oil_grade', label: 'Oil Grade', placeholder: 'e.g. 10W-30' },
-  { key: 'tire_pressure_psi', label: 'Tire Pressure (PSI)', placeholder: 'e.g. 32' },
+  { key: 'tire_pressure_psi', label: 'Tire Pressure (PSI)', placeholder: 'e.g. 32', type: 'number' },
 ];
+
+const FLUID_FIELDS = [
+  { key: 'engine_oil_capacity', label: 'Engine Oil Capacity', placeholder: 'e.g. 7.5L' },
+  { key: 'coolant_capacity', label: 'Coolant Capacity', placeholder: 'e.g. 10L' },
+  { key: 'gear_oil_capacity', label: 'Gear Oil Capacity', placeholder: 'e.g. 3.5L' },
+  { key: 'brake_fluid_capacity', label: 'Brake Fluid Capacity', placeholder: 'e.g. 1L' },
+  { key: 'power_steering_fluid', label: 'Power Steering Fluid', placeholder: 'e.g. Dexron III' },
+];
+
+const TORQUE_FIELDS = [
+  { key: 'wheel_nut_torque', label: 'Wheel Nut Torque', placeholder: 'e.g. 100 Nm' },
+  { key: 'cylinder_head_torque', label: 'Cylinder Head Torque', placeholder: 'e.g. 78 Nm (3 stages)' },
+];
+
+const ALL_FIELDS = [...IDENTITY_FIELDS, ...FLUID_FIELDS, ...TORQUE_FIELDS];
 
 const TechSpecsView = ({ vehicle }: TechSpecsViewProps) => {
   const updateVehicle = useUpdateVehicle();
