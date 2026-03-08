@@ -47,10 +47,11 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
     const interval = latest?.replacement_interval_km || mp.lifeKm;
     const lastOdo = latest?.odometer_at_service || 0;
     const kmSince = vehicle.current_odometer - lastOdo;
-    const lifeUsed = lastOdo > 0 ? Math.min(100, (kmSince / interval) * 100) : 100;
-    const lifeRemaining = Math.max(0, 100 - lifeUsed);
+    const hasData = lastOdo > 0;
+    const lifeUsed = hasData ? Math.min(100, (kmSince / interval) * 100) : 0;
+    const lifeRemaining = hasData ? Math.max(0, 100 - lifeUsed) : -1;
 
-    return { ...mp, latest, lifeUsed, lifeRemaining, kmSince, interval, hasData: lastOdo > 0 };
+    return { ...mp, latest, lifeUsed, lifeRemaining, kmSince, interval, hasData };
   });
 
   const handleAdd = async (e: React.FormEvent) => {
