@@ -68,16 +68,27 @@ const VehicleHistory = () => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
       try {
-        const backendUrl = 'https://vpgebrgwuneqgrprhoxg.supabase.co';
+        const backendUrl = import.meta.env.VITE_SUPABASE_URL;
+
+        if (!backendUrl) {
+          setError('Backend configuration missing');
+          setLoading(false);
+          return;
+        }
+
         const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
         const res = await fetch(endpoint);
 
         if (!res.ok) {
-          if (res.status === 404) {
-            setError('Vehicle not found');
-          } else {
-            setError('Failed to load vehicle data');
+          let backendError = '';
+          try {
+            const payload = await res.json();
+            backendError = payload?.error || payload?.message || '';
+          } catch {
+            backendError = '';
           }
+
+          setError(backendError || (res.status === 404 ? 'Vehicle not found' : 'Failed to load vehicle data'));
           setLoading(false);
           return;
         }
