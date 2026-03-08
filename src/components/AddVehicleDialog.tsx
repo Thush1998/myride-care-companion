@@ -7,7 +7,7 @@ import { useAddVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 
 interface AddVehicleDialogProps {
   open: boolean;
