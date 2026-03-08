@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Navigation, Play, Square, MapPin } from 'lucide-react';
+import { Navigation, Play, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Vehicle } from '@/hooks/useVehicles';
 import { useTrips, useActiveTrip, useStartTrip, useEndTrip } from '@/hooks/useTrips';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import ActiveTripDashboard from './ActiveTripDashboard';
 
 interface TripsViewProps {
   vehicle: Vehicle;
@@ -18,8 +19,15 @@ const TripsView = ({ vehicle }: TripsViewProps) => {
 
   const [tracking, setTracking] = useState(false);
   const [distance, setDistance] = useState(0);
-  const lastPosRef = useRef<GeolocationCoordinates | null>(null);
+  const [currentSpeed, setCurrentSpeed] = useState(0);
+  const [maxSpeed, setMaxSpeed] = useState(0);
+  const [speedSamples, setSpeedSamples] = useState<number[]>([]);
+  const lastPosRef = useRef<{ coords: GeolocationCoordinates; timestamp: number } | null>(null);
   const watchIdRef = useRef<number | null>(null);
+
+  const avgSpeed = speedSamples.length > 0
+    ? speedSamples.reduce((a, b) => a + b, 0) / speedSamples.length
+    : 0;
 
   const handleStartTrip = async () => {
     if (!navigator.geolocation) {
@@ -30,6 +38,9 @@ const TripsView = ({ vehicle }: TripsViewProps) => {
       await startTrip.mutateAsync({ vehicleId: vehicle.id, startOdometer: vehicle.current_odometer });
       setTracking(true);
       setDistance(0);
+      setCurrentSpeed(0);
+      setMaxSpeed(0);
+      setSpeedSamples([]);
       lastPosRef.current = null;
       toast.success('Trip started! GPS tracking active.');
     } catch { toast.error('Failed to start trip'); }
@@ -46,6 +57,7 @@ const TripsView = ({ vehicle }: TripsViewProps) => {
         endOdometer: endOdo,
       });
       setTracking(false);
+      setCurrentSpeed(0);
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
@@ -60,19 +72,37 @@ const TripsView = ({ vehicle }: TripsViewProps) => {
 
     const id = navigator.geolocation.watchPosition(
       (pos) => {
+        const now = pos.timestamp;
+
         if (lastPosRef.current) {
           const d = haversine(
-            lastPosRef.current.latitude, lastPosRef.current.longitude,
+            lastPosRef.current.coords.latitude, lastPosRef.current.coords.longitude,
             pos.coords.latitude, pos.coords.longitude
           );
+
+          // Calculate speed from GPS (pos.coords.speed or manual)
+          let speedKmh = 0;
+          if (pos.coords.speed != null && pos.coords.speed >= 0) {
+            speedKmh = pos.coords.speed * 3.6; // m/s to km/h
+          } else {
+            const dtHours = (now - lastPosRef.current.timestamp) / 3600000;
+            if (dtHours > 0) speedKmh = d / dtHours;
+          }
+
           if (d > 0.005) { // min 5m to avoid jitter
             setDistance((prev) => prev + d);
           }
+
+          setCurrentSpeed(speedKmh);
+          setMaxSpeed((prev) => Math.max(prev, speedKmh));
+          if (speedKmh > 0.5) {
+            setSpeedSamples((prev) => [...prev.slice(-500), speedKmh]);
+          }
         }
-        lastPosRef.current = pos.coords;
+        lastPosRef.current = { coords: pos.coords, timestamp: now };
       },
       () => toast.error('GPS error'),
-      { enableHighAccuracy: true, maximumAge: 5000 }
+      { enableHighAccuracy: true, maximumAge: 3000 }
     );
     watchIdRef.current = id;
 
@@ -87,40 +117,40 @@ const TripsView = ({ vehicle }: TripsViewProps) => {
     if (activeTrip && !tracking) setTracking(true);
   }, [activeTrip, tracking]);
 
+  // Show full-screen dashboard when trip is active
+  if (tracking && activeTrip) {
+    return (
+      <ActiveTripDashboard
+        vehicle={vehicle}
+        activeTrip={activeTrip}
+        onStopTrip={handleStopTrip}
+        isEnding={endTrip.isPending}
+        distance={distance}
+        currentSpeed={currentSpeed}
+        maxSpeed={maxSpeed}
+        avgSpeed={avgSpeed}
+      />
+    );
+  }
+
   return (
     <div className="animate-fade-in space-y-6">
       <h2 className="text-xl font-bold text-foreground">GPS Tracking</h2>
 
-      {/* Active Trip */}
-      <div className={`glass-card p-6 ${tracking ? 'animate-pulse-glow border-primary/30' : ''}`}>
+      {/* Start Trip */}
+      <div className="glass-card p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground">
-              {tracking ? 'Trip in Progress' : 'Start a Trip'}
-            </h3>
-            {tracking && (
-              <div className="mt-2">
-                <span className="font-mono text-4xl font-bold text-primary">{distance.toFixed(2)}</span>
-                <span className="ml-2 text-muted-foreground">km</span>
-              </div>
-            )}
+            <h3 className="text-sm font-semibold text-muted-foreground">Start a Trip</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              <MapPin className="mr-1 inline h-3 w-3" />
+              GPS will track your route, speed and distance.
+            </p>
           </div>
-          {tracking ? (
-            <Button onClick={handleStopTrip} disabled={endTrip.isPending} variant="destructive" className="gap-2 font-semibold">
-              <Square className="h-4 w-4" /> Stop Trip
-            </Button>
-          ) : (
-            <Button onClick={handleStartTrip} disabled={startTrip.isPending} className="gap-2 gradient-amber text-primary-foreground font-semibold">
-              <Play className="h-4 w-4" /> Start Trip
-            </Button>
-          )}
+          <Button onClick={handleStartTrip} disabled={startTrip.isPending} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+            <Play className="h-4 w-4" /> Start Trip
+          </Button>
         </div>
-        {tracking && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            <MapPin className="mr-1 inline h-3 w-3" />
-            GPS is actively tracking your location. Odometer will auto-update when trip ends.
-          </p>
-        )}
       </div>
 
       {/* Trip History */}
