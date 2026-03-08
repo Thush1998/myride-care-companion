@@ -29,6 +29,7 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
 
+  const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
   const avgKmPerL = calcKmPerLiter(logs || []);
   const lPer100 = calcLitersPer100km(logs || []);
   const costPerKm = calcCostPerKm(logs || []);
