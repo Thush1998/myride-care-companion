@@ -154,6 +154,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <div className="text-right">
                   <div className="font-mono text-3xl font-bold text-primary">{Number(vehicle.current_odometer).toLocaleString()}</div>
                   <div className="font-display text-xs tracking-wider text-muted-foreground uppercase">kilometers</div>
+                  <button onClick={() => setOdoDialogOpen(true)} className="mt-1 inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground">
+                    <Gauge className="h-3 w-3" /> Update Odometer
+                  </button>
                 </div>
                 <button onClick={openEdit} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">
                   <Pencil className="h-4 w-4" />
