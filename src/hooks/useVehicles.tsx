@@ -35,7 +35,7 @@ export const useVehicles = () => {
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Vehicle[];
+      return (data as unknown as Vehicle[]).map(v => ({ ...v, category: (v as any).category || 'car' }));
     },
     enabled: !!user,
   });
