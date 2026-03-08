@@ -293,14 +293,6 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         )}
 
         {/* Odometer Update */}
-        <div className="glass-card neon-border p-4">
-          <h3 className="mb-3 font-display text-xs font-bold tracking-wider text-primary uppercase">Update Odometer</h3>
-          <div className="flex gap-3">
-            <Input type="number" value={newOdometer} onChange={e => setNewOdometer(e.target.value)}
-              placeholder={`Current: ${Number(vehicle.current_odometer).toLocaleString()} km`} className="bg-input border-border font-mono" />
-            <Button onClick={handleOdometerUpdate} disabled={updateOdometer.isPending} className="gradient-cyan text-primary-foreground font-semibold">Update</Button>
-          </div>
-        </div>
       </div>
     </>
   );
