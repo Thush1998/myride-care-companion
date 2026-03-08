@@ -22,6 +22,7 @@ import HealthCertificate from './HealthCertificate';
 import OBDCharts from './OBDCharts';
 import SystemScan from './SystemScan';
 import SparePartsView from './SparePartsView';
+import MaintenanceForecast from './MaintenanceForecast';
 import HealthReportPDF from './HealthReportPDF';
 import VehicleQRCode from './VehicleQRCode';
 
