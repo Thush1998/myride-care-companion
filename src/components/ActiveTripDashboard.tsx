@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Square, Gauge, Clock, Zap, TrendingUp, Navigation, ChevronUp, ChevronDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Square, Clock, Zap, TrendingUp, Navigation, ChevronUp, ChevronDown, Trophy, Route, Timer, X, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Vehicle } from '@/hooks/useVehicles';
 import { Trip } from '@/hooks/useTrips';
