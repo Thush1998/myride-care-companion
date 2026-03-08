@@ -47,13 +47,11 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [odometer, setOdometer] = useState('');
+  const [category, setCategory] = useState<VehicleCategory>('car');
 
-  // Step 2: Component baselines
-  const [components, setComponents] = useState<Record<string, ComponentEntry>>(() => {
-    const init: Record<string, ComponentEntry> = {};
-    TRACKED_COMPONENTS.forEach(c => { init[c.key] = { lastMileage: '', status: 'unknown' }; });
-    return init;
-  });
+  // Step 2: Component baselines (dynamic based on category)
+  const trackedComponents = getTrackedParts(category);
+  const [components, setComponents] = useState<Record<string, ComponentEntry>>({});
 
   // Step 3: Inspection checklist
   const [inspections, setInspections] = useState<Record<string, boolean>>(() => {
