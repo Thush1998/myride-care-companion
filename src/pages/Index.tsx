@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useVehicles, Vehicle } from '@/hooks/useVehicles';
+import { useVehicles } from '@/hooks/useVehicles';
 import AppSidebar from '@/components/AppSidebar';
 import AddVehicleDialog from '@/components/AddVehicleDialog';
 import DashboardView from '@/components/DashboardView';
@@ -8,6 +8,8 @@ import ServiceLogsView from '@/components/ServiceLogsView';
 import TripsView from '@/components/TripsView';
 import FuelLogView from '@/components/FuelLogView';
 import DocumentsView from '@/components/DocumentsView';
+import TechSpecsView from '@/components/TechSpecsView';
+import ModificationsView from '@/components/ModificationsView';
 import AuthPage from '@/pages/AuthPage';
 import { Car } from 'lucide-react';
 
@@ -28,9 +30,8 @@ const Index = () => {
 
   if (!user) return <AuthPage />;
 
-  const selectedVehicle = vehicles.find((v) => v.id === selectedVehicleId) || null;
+  const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId) || null;
 
-  // Auto-select first vehicle
   if (vehicles.length > 0 && !selectedVehicleId) {
     setSelectedVehicleId(vehicles[0].id);
   }
@@ -60,10 +61,8 @@ const Index = () => {
             <p className="max-w-sm text-muted-foreground">
               Add your first vehicle to get started with service tracking, maintenance alerts, and GPS trip logging.
             </p>
-            <button
-              onClick={() => setAddDialogOpen(true)}
-              className="gradient-amber rounded-lg px-6 py-3 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
+            <button onClick={() => setAddDialogOpen(true)}
+              className="gradient-amber rounded-lg px-6 py-3 font-semibold text-primary-foreground transition-opacity hover:opacity-90">
               Add Your First Vehicle
             </button>
           </div>
@@ -73,6 +72,8 @@ const Index = () => {
             {activeTab === 'services' && <ServiceLogsView vehicle={selectedVehicle} />}
             {activeTab === 'fuel' && <FuelLogView vehicle={selectedVehicle} />}
             {activeTab === 'documents' && <DocumentsView vehicle={selectedVehicle} />}
+            {activeTab === 'specs' && <TechSpecsView vehicle={selectedVehicle} />}
+            {activeTab === 'modifications' && <ModificationsView vehicle={selectedVehicle} />}
             {activeTab === 'trips' && <TripsView vehicle={selectedVehicle} />}
           </>
         )}

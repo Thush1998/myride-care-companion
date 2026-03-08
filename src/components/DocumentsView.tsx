@@ -1,16 +1,17 @@
 import { useState, useRef } from 'react';
-import { FileText, Plus, Trash2, AlertTriangle, Upload, ExternalLink } from 'lucide-react';
+import { FileText, Plus, Trash2, Pencil, AlertTriangle, Upload, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useDocuments, useAddDocument, useDeleteDocument } from '@/hooks/useDocuments';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useDocuments, useAddDocument, useDeleteDocument, Document } from '@/hooks/useDocuments';
 import { useAuth } from '@/hooks/useAuth';
 import { Vehicle } from '@/hooks/useVehicles';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface DocumentsViewProps {
   vehicle: Vehicle;
@@ -23,33 +24,63 @@ const DOC_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
+const db = supabase as any;
+
+const useUpdateDocument = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, vehicleId, ...updates }: {
+      id: string; vehicleId: string; doc_name?: string; doc_type?: string;
+      expiry_date?: string | null; issue_date?: string | null; notes?: string | null; file_url?: string | null;
+    }) => {
+      const { error } = await db.from('documents').update(updates).eq('id', id);
+      if (error) throw error;
+      return vehicleId;
+    },
+    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['documents', vehicleId] }),
+  });
+};
+
+const emptyForm = () => ({
+  doc_type: 'revenue_license', doc_name: '', expiry_date: '', issue_date: '', notes: '',
+});
+
 const DocumentsView = ({ vehicle }: DocumentsViewProps) => {
   const { user } = useAuth();
   const { data: docs, isLoading } = useDocuments(vehicle.id);
   const addDoc = useAddDocument();
   const deleteDoc = useDeleteDocument();
+  const updateDoc = useUpdateDocument();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  const [form, setForm] = useState({
-    doc_type: 'revenue_license', doc_name: '', expiry_date: '', issue_date: '', notes: '',
-  });
+  const [form, setForm] = useState(emptyForm());
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const openAdd = () => { setEditingId(null); setForm(emptyForm()); setSelectedFile(null); setOpen(true); };
+
+  const openEdit = (doc: Document) => {
+    setEditingId(doc.id);
+    setForm({
+      doc_type: doc.doc_type, doc_name: doc.doc_name,
+      expiry_date: doc.expiry_date || '', issue_date: doc.issue_date || '',
+      notes: doc.notes || '',
+    });
+    setSelectedFile(null);
+    setOpen(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.doc_name.trim()) { toast.error('Document name is required'); return; }
 
     let fileUrl: string | undefined;
-
     if (selectedFile && user) {
       setUploading(true);
       const ext = selectedFile.name.split('.').pop();
       const path = `${user.id}/${vehicle.id}/${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('vehicle-documents')
-        .upload(path, selectedFile);
+      const { error: uploadError } = await supabase.storage.from('vehicle-documents').upload(path, selectedFile);
       if (uploadError) { toast.error('File upload failed'); setUploading(false); return; }
       const { data: urlData } = supabase.storage.from('vehicle-documents').getPublicUrl(path);
       fileUrl = urlData.publicUrl;
@@ -57,27 +88,30 @@ const DocumentsView = ({ vehicle }: DocumentsViewProps) => {
     }
 
     try {
-      await addDoc.mutateAsync({
-        vehicle_id: vehicle.id,
-        doc_type: form.doc_type,
-        doc_name: form.doc_name.trim(),
-        file_url: fileUrl,
-        expiry_date: form.expiry_date || undefined,
-        issue_date: form.issue_date || undefined,
-        notes: form.notes.trim() || undefined,
-      });
-      toast.success('Document added!');
-      setOpen(false);
-      setForm({ doc_type: 'revenue_license', doc_name: '', expiry_date: '', issue_date: '', notes: '' });
-      setSelectedFile(null);
-    } catch { toast.error('Failed to add document'); }
+      if (editingId) {
+        await updateDoc.mutateAsync({
+          id: editingId, vehicleId: vehicle.id,
+          doc_type: form.doc_type, doc_name: form.doc_name.trim(),
+          expiry_date: form.expiry_date || null, issue_date: form.issue_date || null,
+          notes: form.notes.trim() || null,
+          ...(fileUrl ? { file_url: fileUrl } : {}),
+        });
+        toast.success('Document updated!');
+      } else {
+        await addDoc.mutateAsync({
+          vehicle_id: vehicle.id, doc_type: form.doc_type, doc_name: form.doc_name.trim(),
+          file_url: fileUrl, expiry_date: form.expiry_date || undefined,
+          issue_date: form.issue_date || undefined, notes: form.notes.trim() || undefined,
+        });
+        toast.success('Document added!');
+      }
+      setOpen(false); setForm(emptyForm()); setSelectedFile(null); setEditingId(null);
+    } catch { toast.error('Failed to save document'); }
   };
 
-  // Expiry warnings
   const expiringDocs = (docs || []).filter(d => {
     if (!d.expiry_date) return false;
-    const daysLeft = differenceInDays(new Date(d.expiry_date), new Date());
-    return daysLeft <= 30;
+    return differenceInDays(new Date(d.expiry_date), new Date()) <= 30;
   });
 
   const getExpiryStatus = (expiryDate: string) => {
@@ -92,73 +126,52 @@ const DocumentsView = ({ vehicle }: DocumentsViewProps) => {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Documents</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 gradient-amber text-primary-foreground font-semibold">
-              <Plus className="h-4 w-4" /> Add Document
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Add Document</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <Label className="text-muted-foreground">Document Type</Label>
-                <Select value={form.doc_type} onValueChange={(v) => setForm(f => ({ ...f, doc_type: v }))}>
-                  <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {DOC_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Document Name *</Label>
-                <Input value={form.doc_name} onChange={(e) => setForm(f => ({ ...f, doc_name: e.target.value }))} placeholder="Insurance Policy 2026" className="bg-input border-border" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-muted-foreground">Issue Date</Label>
-                  <Input type="date" value={form.issue_date} onChange={(e) => setForm(f => ({ ...f, issue_date: e.target.value }))} className="bg-input border-border" />
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Expiry Date</Label>
-                  <Input type="date" value={form.expiry_date} onChange={(e) => setForm(f => ({ ...f, expiry_date: e.target.value }))} className="bg-input border-border" />
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Upload File (PDF/Image)</Label>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,.webp"
-                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} className="w-full gap-2 border-border text-muted-foreground">
-                  <Upload className="h-4 w-4" />
-                  {selectedFile ? selectedFile.name : 'Choose file...'}
-                </Button>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Notes</Label>
-                <Input value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional notes" className="bg-input border-border" />
-              </div>
-              <Button type="submit" disabled={addDoc.isPending || uploading} className="w-full gradient-amber text-primary-foreground font-semibold">
-                {uploading ? 'Uploading...' : addDoc.isPending ? 'Adding...' : 'Add Document'}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+          <Plus className="h-4 w-4" /> Add Document
+        </Button>
       </div>
 
-      {/* Expiry Alerts */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{editingId ? 'Edit Document' : 'Add Document'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div>
+              <Label className="text-muted-foreground">Document Type</Label>
+              <Select value={form.doc_type} onValueChange={v => setForm(f => ({ ...f, doc_type: v }))}>
+                <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DOC_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Document Name *</Label>
+              <Input value={form.doc_name} onChange={e => setForm(f => ({ ...f, doc_name: e.target.value }))} placeholder="Insurance Policy 2026" className="bg-input border-border" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Issue Date</Label><Input type="date" value={form.issue_date} onChange={e => setForm(f => ({ ...f, issue_date: e.target.value }))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Expiry Date</Label><Input type="date" value={form.expiry_date} onChange={e => setForm(f => ({ ...f, expiry_date: e.target.value }))} className="bg-input border-border" /></div>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Upload File (PDF/Image)</Label>
+              <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={e => setSelectedFile(e.target.files?.[0] || null)} className="hidden" />
+              <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} className="w-full gap-2 border-border text-muted-foreground">
+                <Upload className="h-4 w-4" /> {selectedFile ? selectedFile.name : 'Choose file...'}
+              </Button>
+            </div>
+            <div><Label className="text-muted-foreground">Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Optional notes" className="bg-input border-border" /></div>
+            <Button type="submit" disabled={addDoc.isPending || updateDoc.isPending || uploading} className="w-full gradient-amber text-primary-foreground font-semibold">
+              {uploading ? 'Uploading...' : editingId ? (updateDoc.isPending ? 'Saving...' : 'Save Changes') : (addDoc.isPending ? 'Adding...' : 'Add Document')}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {expiringDocs.length > 0 && (
         <div className="glass-card border-warning/30 p-4">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-warning">
-            <AlertTriangle className="h-4 w-4" />
-            Expiry Alerts
-          </h3>
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-warning"><AlertTriangle className="h-4 w-4" /> Expiry Alerts</h3>
           <div className="space-y-2">
             {expiringDocs.map(d => {
               const status = getExpiryStatus(d.expiry_date!);
@@ -176,17 +189,16 @@ const DocumentsView = ({ vehicle }: DocumentsViewProps) => {
         </div>
       )}
 
-      {/* Document List */}
       {isLoading ? (
         <p className="text-muted-foreground">Loading...</p>
       ) : !docs?.length ? (
         <div className="glass-card flex flex-col items-center py-12 text-center">
           <FileText className="mb-3 h-10 w-10 text-muted-foreground/50" />
-          <p className="text-muted-foreground">No documents yet. Add your license, insurance, or emission test records.</p>
+          <p className="text-muted-foreground">No documents yet.</p>
         </div>
       ) : (
         <div className="space-y-2">
-          {docs.map((doc) => {
+          {docs.map(doc => {
             const status = doc.expiry_date ? getExpiryStatus(doc.expiry_date) : null;
             return (
               <div key={doc.id} className="glass-card flex items-center justify-between p-4">
@@ -211,12 +223,14 @@ const DocumentsView = ({ vehicle }: DocumentsViewProps) => {
                   </div>
                   {doc.notes && <p className="mt-1 text-xs text-muted-foreground/70">{doc.notes}</p>}
                 </div>
-                <button
-                  onClick={() => deleteDoc.mutate({ id: doc.id, vehicleId: vehicle.id, fileUrl: doc.file_url })}
-                  className="ml-3 shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
+                <div className="ml-3 flex shrink-0 gap-1">
+                  <button onClick={() => openEdit(doc)} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => deleteDoc.mutate({ id: doc.id, vehicleId: vehicle.id, fileUrl: doc.file_url })} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             );
           })}
