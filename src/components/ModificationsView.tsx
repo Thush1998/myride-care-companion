@@ -172,7 +172,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
                     {mod.description && <p className="mt-0.5 text-xs text-muted-foreground">{mod.description}</p>}
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span>{format(new Date(mod.mod_date), 'MMM d, yyyy')}</span>
-                      {mod.cost != null && <span className="font-mono text-primary">${mod.cost}</span>}
+                      {mod.cost != null && <span className="font-mono text-primary">Rs. {mod.cost}</span>}
                     </div>
                     {mod.wiring_notes && (
                       <p className="mt-1.5 rounded bg-secondary/50 p-2 font-mono text-xs text-muted-foreground">

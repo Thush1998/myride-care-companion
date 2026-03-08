@@ -173,8 +173,8 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span>{format(new Date(log.fuel_date), 'MMM d, yyyy')}</span>
                   {log.station && <span>⛽ {log.station}</span>}
-                  {log.total_cost != null && <span className="font-mono text-primary">${log.total_cost}</span>}
-                  {log.price_per_liter != null && <span className="font-mono">${log.price_per_liter}/L</span>}
+                  {log.total_cost != null && <span className="font-mono text-primary">Rs. {log.total_cost}</span>}
+                  {log.price_per_liter != null && <span className="font-mono">Rs. {log.price_per_liter}/L</span>}
                   {log.odometer_at_fill != null && <span>{log.odometer_at_fill.toLocaleString()} km</span>}
                 </div>
               </div>

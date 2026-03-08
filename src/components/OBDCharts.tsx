@@ -77,7 +77,7 @@ const OBDCharts = ({ fuelLogs, services }: OBDChartsProps) => {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(185, 30%, 12%)" />
               <XAxis dataKey="month" tick={{ fill: 'hsl(210, 15%, 50%)', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
               <YAxis tick={{ fill: 'hsl(210, 15%, 50%)', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
-              <Tooltip {...tooltipStyle} formatter={(v: number) => `$${v.toLocaleString()}`} />
+              <Tooltip {...tooltipStyle} formatter={(v: number) => `Rs. ${v.toLocaleString()}`} />
               <Bar dataKey="total" fill="hsl(30, 95%, 55%)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

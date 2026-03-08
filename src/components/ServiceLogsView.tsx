@@ -259,14 +259,14 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                       <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="text-foreground">{scanResult.result.date}</span></div>
                     )}
                     {scanResult.result.total_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-primary font-bold">${scanResult.result.total_amount}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-primary font-bold">Rs. {scanResult.result.total_amount}</span></div>
                     )}
                     {scanResult.result.parts?.length > 0 && (
                       <div>
                         <span className="text-muted-foreground">Parts:</span>
                         <ul className="mt-1 space-y-1 pl-3">
                           {scanResult.result.parts.map((p: any, i: number) => (
-                            <li key={i} className="text-foreground">• {p.name}{p.price != null ? ` ($${p.price})` : ''}</li>
+                            <li key={i} className="text-foreground">• {p.name}{p.price != null ? ` (Rs. ${p.price})` : ''}</li>
                           ))}
                         </ul>
                       </div>

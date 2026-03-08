@@ -206,9 +206,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
-          <StatCard icon={TrendingUp} label="Service + Mods" value={`$${totalSpent.toLocaleString()}`} />
-          <StatCard icon={Activity} label="Fuel Spent" value={`$${fuelSpent.toLocaleString()}`} />
-          <StatCard icon={DollarSign} label="Cost/km" value={`$${cpk}`} highlight />
+          <StatCard icon={TrendingUp} label="Service + Mods" value={`Rs. ${totalSpent.toLocaleString()}`} />
+          <StatCard icon={Activity} label="Fuel Spent" value={`Rs. ${fuelSpent.toLocaleString()}`} />
+          <StatCard icon={DollarSign} label="Cost/km" value={`Rs. ${cpk}`} highlight />
         </div>
 
         {/* OBD Charts */}

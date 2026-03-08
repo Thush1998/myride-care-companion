@@ -76,7 +76,7 @@ const VehicleHistory = () => {
                     </div>
                     {s.odometer_at_service && <p className="text-xs text-muted-foreground mt-1">{Number(s.odometer_at_service).toLocaleString()} km</p>}
                   </div>
-                  {s.price != null && <span className="font-mono text-sm font-semibold text-primary">${s.price}</span>}
+                  {s.price != null && <span className="font-mono text-sm font-semibold text-primary">Rs. {s.price}</span>}
                 </div>
               ))}
             </div>

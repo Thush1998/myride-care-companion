@@ -44,7 +44,7 @@ const SpendingChart = ({ services }: SpendingChartProps) => {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number) => `$${value.toLocaleString()}`}
+            formatter={(value: number) => `Rs. ${value.toLocaleString()}`}
             contentStyle={{
               background: 'hsl(220, 22%, 10%)',
               border: '1px solid hsl(185, 30%, 15%)',

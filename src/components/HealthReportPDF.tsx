@@ -72,7 +72,7 @@ const generateReport = ({ vehicleName, plateNo, odometer, services }: HealthRepo
 <div class="stats-grid">
   <div class="stat"><div class="stat-label">Odometer</div><div class="stat-value">${odometer.toLocaleString()} km</div></div>
   <div class="stat"><div class="stat-label">Total Services</div><div class="stat-value">${services.length}</div></div>
-  <div class="stat"><div class="stat-label">Total Spent</div><div class="stat-value">$${totalSpent.toLocaleString()}</div></div>
+  <div class="stat"><div class="stat-label">Total Spent</div><div class="stat-value">Rs. ${totalSpent.toLocaleString()}</div></div>
 </div>
 <h2>Component Health Status</h2>
 <table><thead><tr><th>Component</th><th style="text-align:center">Health</th><th>Last Service</th><th>Brand</th></tr></thead><tbody>${healthTableRows}</tbody></table>
