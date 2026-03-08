@@ -207,8 +207,20 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <div><Label className="text-muted-foreground">Plate No *</Label><Input value={editForm.plate_no} onChange={e => setEditForm(f => ({ ...f, plate_no: e.target.value }))} className="bg-input border-border" /></div>
               </div>
               <div><Label className="text-muted-foreground">Color</Label><Input value={editForm.color} onChange={e => setEditForm(f => ({ ...f, color: e.target.value }))} className="bg-input border-border" /></div>
+              <div>
+                <Label className="text-muted-foreground">Category</Label>
+                <Select value={editForm.category} onValueChange={v => setEditForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {VEHICLE_CATEGORIES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button type="submit" disabled={updateVehicle.isPending} className="w-full gradient-cyan text-primary-foreground font-semibold">
                 {updateVehicle.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
               </Button>
             </form>
           </DialogContent>
