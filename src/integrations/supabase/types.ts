@@ -120,6 +120,56 @@ export type Database = {
           },
         ]
       }
+      modifications: {
+        Row: {
+          cost: number | null
+          created_at: string
+          description: string | null
+          id: string
+          mod_date: string
+          mod_name: string
+          photo_url: string | null
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+          wiring_notes: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          mod_date?: string
+          mod_name: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+          wiring_notes?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          mod_date?: string
+          mod_name?: string
+          photo_url?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+          wiring_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "modifications_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_logs: {
         Row: {
           created_at: string
@@ -131,6 +181,7 @@ export type Database = {
           part_number: string | null
           price: number | null
           replacement_interval_km: number | null
+          service_category: string
           service_date: string
           updated_at: string
           user_id: string
@@ -146,6 +197,7 @@ export type Database = {
           part_number?: string | null
           price?: number | null
           replacement_interval_km?: number | null
+          service_category?: string
           service_date?: string
           updated_at?: string
           user_id: string
@@ -161,6 +213,7 @@ export type Database = {
           part_number?: string | null
           price?: number | null
           replacement_interval_km?: number | null
+          service_category?: string
           service_date?: string
           updated_at?: string
           user_id?: string
@@ -228,43 +281,58 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          chassis_number: string | null
           color: string | null
           created_at: string
           current_odometer: number
+          engine_number: string | null
           id: string
           image_url: string | null
           make: string
           model: string
           nickname: string | null
+          oil_grade: string | null
+          paint_code: string | null
           plate_no: string
+          tire_pressure_psi: number | null
           updated_at: string
           user_id: string
           year: number
         }
         Insert: {
+          chassis_number?: string | null
           color?: string | null
           created_at?: string
           current_odometer?: number
+          engine_number?: string | null
           id?: string
           image_url?: string | null
           make: string
           model: string
           nickname?: string | null
+          oil_grade?: string | null
+          paint_code?: string | null
           plate_no: string
+          tire_pressure_psi?: number | null
           updated_at?: string
           user_id: string
           year: number
         }
         Update: {
+          chassis_number?: string | null
           color?: string | null
           created_at?: string
           current_odometer?: number
+          engine_number?: string | null
           id?: string
           image_url?: string | null
           make?: string
           model?: string
           nickname?: string | null
+          oil_grade?: string | null
+          paint_code?: string | null
           plate_no?: string
+          tire_pressure_psi?: number | null
           updated_at?: string
           user_id?: string
           year?: number
