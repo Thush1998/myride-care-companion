@@ -10,6 +10,7 @@ export type Vehicle = {
   year: number;
   plate_no: string;
   color: string | null;
+  nickname: string | null;
   current_odometer: number;
   image_url: string | null;
   created_at: string;
@@ -38,7 +39,7 @@ export const useAddVehicle = () => {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string }) => {
+    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string }) => {
       const { data, error } = await supabase
         .from('vehicles')
         .insert({ ...vehicle, user_id: user!.id })
@@ -46,6 +47,20 @@ export const useAddVehicle = () => {
         .single();
       if (error) throw error;
       return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['vehicles'] }),
+  });
+};
+
+export const useUpdateVehicle = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string; nickname?: string; image_url?: string; color?: string }) => {
+      const { error } = await supabase
+        .from('vehicles')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['vehicles'] }),
   });

@@ -1,4 +1,4 @@
-import { Car, Gauge, Wrench, Navigation, LogOut, Plus } from 'lucide-react';
+import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText } from 'lucide-react';
 import { Vehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,8 @@ interface AppSidebarProps {
 const tabs = [
   { id: 'dashboard', label: 'Dashboard', icon: Gauge },
   { id: 'services', label: 'Service Logs', icon: Wrench },
+  { id: 'fuel', label: 'Fuel Log', icon: Fuel },
+  { id: 'documents', label: 'Documents', icon: FileText },
   { id: 'trips', label: 'GPS Tracking', icon: Navigation },
 ];
 
@@ -52,9 +54,15 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
                   : "text-muted-foreground hover:bg-secondary hover:text-foreground"
               )}
             >
-              <Car className="h-4 w-4 shrink-0" />
+              {v.image_url ? (
+                <img src={v.image_url} alt={v.make} className="h-8 w-8 shrink-0 rounded-lg object-cover" />
+              ) : (
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                  <Car className="h-4 w-4" />
+                </div>
+              )}
               <div className="min-w-0">
-                <div className="truncate font-medium">{v.make} {v.model}</div>
+                <div className="truncate font-medium">{v.nickname || `${v.make} ${v.model}`}</div>
                 <div className="truncate text-xs opacity-70">{v.plate_no} · {v.year}</div>
               </div>
             </button>
