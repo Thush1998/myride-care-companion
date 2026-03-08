@@ -184,7 +184,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
       // Insert initial service logs for known components
       const serviceLogs: any[] = [];
       trackedComponents.forEach(tc => {
-        const comp = components[tc.key];
+        const comp = components[tc.key] || { lastMileage: '', status: 'unknown' };
         if (comp.status === 'known' && comp.lastMileage) {
           serviceLogs.push({
             vehicle_id: vehicleData.id,
