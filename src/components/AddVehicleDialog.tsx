@@ -173,6 +173,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
         make: make.trim(), model: model.trim(), year: parseInt(year),
         plate_no: plateNo.trim(), color: color.trim() || undefined,
         nickname: nickname.trim() || undefined, image_url: imageUrl,
+        category,
       });
 
       // Update odometer
