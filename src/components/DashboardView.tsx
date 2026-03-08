@@ -141,8 +141,6 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                   <span className="text-4xl">{getCategoryIcon(vehicle.category)}</span>
                 </div>
               )}
-                </div>
-              )}
               <button onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}
                 className="absolute inset-0 flex items-center justify-center bg-background/60 opacity-0 transition-opacity group-hover:opacity-100">
                 <Camera className="h-6 w-6 text-primary" />
