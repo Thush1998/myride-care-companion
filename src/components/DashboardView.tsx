@@ -5,6 +5,7 @@ import { useServiceLogs } from '@/hooks/useServiceLogs';
 import { useTrips } from '@/hooks/useTrips';
 import { useFuelLogs } from '@/hooks/useFuelLogs';
 import { useDocuments } from '@/hooks/useDocuments';
+import { useModifications } from '@/hooks/useModifications';
 import { useUpdateOdometer } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { differenceInDays } from 'date-fns';
+import HealthRings from './HealthRings';
+import SpendingChart from './SpendingChart';
+import PredictiveAlerts from './PredictiveAlerts';
 
 interface DashboardViewProps {
   vehicle: Vehicle;
@@ -25,6 +29,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const { data: trips } = useTrips(vehicle.id);
   const { data: fuelLogs } = useFuelLogs(vehicle.id);
   const { data: docs } = useDocuments(vehicle.id);
+  const { data: mods } = useModifications(vehicle.id);
   const updateOdometer = useUpdateOdometer();
   const updateVehicle = useUpdateVehicle();
   const [newOdometer, setNewOdometer] = useState('');
@@ -33,9 +38,8 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
 
-  const totalSpent = services?.reduce((sum, s) => sum + (s.price || 0), 0) ?? 0;
-  const totalTrips = trips?.length ?? 0;
-  const totalDistance = trips?.reduce((sum, t) => sum + t.distance_km, 0) ?? 0;
+  const totalSpent = (services?.reduce((sum, s) => sum + (s.price || 0), 0) ?? 0)
+    + (mods?.reduce((sum, m) => sum + (m.cost || 0), 0) ?? 0);
   const fuelSpent = fuelLogs?.reduce((sum, f) => sum + (f.total_cost || 0), 0) ?? 0;
 
   const warnings = (services || []).filter((s) => {
@@ -71,13 +75,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     e.preventDefault();
     try {
       await updateVehicle.mutateAsync({
-        id: vehicle.id,
-        make: editForm.make.trim(),
-        model: editForm.model.trim(),
-        year: parseInt(editForm.year),
-        plate_no: editForm.plate_no.trim(),
-        color: editForm.color.trim() || undefined,
-        nickname: editForm.nickname.trim() || undefined,
+        id: vehicle.id, make: editForm.make.trim(), model: editForm.model.trim(),
+        year: parseInt(editForm.year), plate_no: editForm.plate_no.trim(),
+        color: editForm.color.trim() || undefined, nickname: editForm.nickname.trim() || undefined,
       });
       toast.success('Vehicle updated!');
       setEditOpen(false);
@@ -111,11 +111,8 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <Car className="h-16 w-16 text-muted-foreground/30" />
               </div>
             )}
-            <button
-              onClick={() => photoRef.current?.click()}
-              disabled={uploadingPhoto}
-              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-            >
+            <button onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
               <Camera className="h-6 w-6 text-white" />
             </button>
             <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
@@ -144,19 +141,16 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         <DialogContent className="bg-card border-border">
           <DialogHeader><DialogTitle className="text-foreground">Edit Vehicle</DialogTitle></DialogHeader>
           <form onSubmit={handleEditSubmit} className="space-y-3">
-            <div>
-              <Label className="text-muted-foreground">Nickname</Label>
-              <Input value={editForm.nickname} onChange={(e) => setEditForm(f => ({ ...f, nickname: e.target.value }))} className="bg-input border-border" />
+            <div><Label className="text-muted-foreground">Nickname</Label><Input value={editForm.nickname} onChange={e => setEditForm(f => ({ ...f, nickname: e.target.value }))} className="bg-input border-border" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Make *</Label><Input value={editForm.make} onChange={e => setEditForm(f => ({ ...f, make: e.target.value }))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Model *</Label><Input value={editForm.model} onChange={e => setEditForm(f => ({ ...f, model: e.target.value }))} className="bg-input border-border" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-muted-foreground">Make *</Label><Input value={editForm.make} onChange={(e) => setEditForm(f => ({ ...f, make: e.target.value }))} className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Model *</Label><Input value={editForm.model} onChange={(e) => setEditForm(f => ({ ...f, model: e.target.value }))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Year *</Label><Input type="number" value={editForm.year} onChange={e => setEditForm(f => ({ ...f, year: e.target.value }))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Plate No *</Label><Input value={editForm.plate_no} onChange={e => setEditForm(f => ({ ...f, plate_no: e.target.value }))} className="bg-input border-border" /></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-muted-foreground">Year *</Label><Input type="number" value={editForm.year} onChange={(e) => setEditForm(f => ({ ...f, year: e.target.value }))} className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Plate No *</Label><Input value={editForm.plate_no} onChange={(e) => setEditForm(f => ({ ...f, plate_no: e.target.value }))} className="bg-input border-border" /></div>
-            </div>
-            <div><Label className="text-muted-foreground">Color</Label><Input value={editForm.color} onChange={(e) => setEditForm(f => ({ ...f, color: e.target.value }))} className="bg-input border-border" /></div>
+            <div><Label className="text-muted-foreground">Color</Label><Input value={editForm.color} onChange={e => setEditForm(f => ({ ...f, color: e.target.value }))} className="bg-input border-border" /></div>
             <Button type="submit" disabled={updateVehicle.isPending} className="w-full gradient-amber text-primary-foreground font-semibold">
               {updateVehicle.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -164,12 +158,21 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         </DialogContent>
       </Dialog>
 
+      {/* Component Health Rings */}
+      <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
         <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
-        <StatCard icon={TrendingUp} label="Service Spent" value={`$${totalSpent.toLocaleString()}`} />
+        <StatCard icon={TrendingUp} label="Service + Mods" value={`$${totalSpent.toLocaleString()}`} />
         <StatCard icon={TrendingUp} label="Fuel Spent" value={`$${fuelSpent.toLocaleString()}`} />
+      </div>
+
+      {/* Spending Chart + Predictive Alerts */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <SpendingChart services={services || []} />
+        <PredictiveAlerts services={services || []} fuelLogs={fuelLogs || []} currentOdometer={vehicle.current_odometer} />
       </div>
 
       {/* Warnings */}
@@ -213,7 +216,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
       <div className="glass-card p-4">
         <h3 className="mb-3 text-sm font-semibold text-muted-foreground">Update Odometer</h3>
         <div className="flex gap-3">
-          <Input type="number" value={newOdometer} onChange={(e) => setNewOdometer(e.target.value)}
+          <Input type="number" value={newOdometer} onChange={e => setNewOdometer(e.target.value)}
             placeholder={`Current: ${Number(vehicle.current_odometer).toLocaleString()} km`} className="bg-input border-border font-mono" />
           <Button onClick={handleOdometerUpdate} disabled={updateOdometer.isPending} className="gradient-amber text-primary-foreground font-semibold">Update</Button>
         </div>
