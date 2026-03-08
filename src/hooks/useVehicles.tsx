@@ -45,7 +45,7 @@ export const useAddVehicle = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string }) => {
+    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string; category?: string }) => {
       const { data, error } = await supabase
         .from('vehicles')
         .insert({ ...vehicle, user_id: user!.id } as any)
