@@ -14,7 +14,154 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      service_logs: {
+        Row: {
+          created_at: string
+          id: string
+          location_shop: string | null
+          notes: string | null
+          odometer_at_service: number | null
+          part_name: string
+          part_number: string | null
+          price: number | null
+          replacement_interval_km: number | null
+          service_date: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location_shop?: string | null
+          notes?: string | null
+          odometer_at_service?: number | null
+          part_name: string
+          part_number?: string | null
+          price?: number | null
+          replacement_interval_km?: number | null
+          service_date?: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location_shop?: string | null
+          notes?: string | null
+          odometer_at_service?: number | null
+          part_name?: string
+          part_number?: string | null
+          price?: number | null
+          replacement_interval_km?: number | null
+          service_date?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trips: {
+        Row: {
+          created_at: string
+          distance_km: number
+          end_odometer: number | null
+          end_time: string | null
+          id: string
+          is_active: boolean
+          start_odometer: number | null
+          start_time: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          distance_km?: number
+          end_odometer?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          start_odometer?: number | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number
+          end_odometer?: number | null
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          start_odometer?: number | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trips_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehicles: {
+        Row: {
+          color: string | null
+          created_at: string
+          current_odometer: number
+          id: string
+          image_url: string | null
+          make: string
+          model: string
+          plate_no: string
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          current_odometer?: number
+          id?: string
+          image_url?: string | null
+          make: string
+          model: string
+          plate_no: string
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          current_odometer?: number
+          id?: string
+          image_url?: string | null
+          make?: string
+          model?: string
+          plate_no?: string
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
