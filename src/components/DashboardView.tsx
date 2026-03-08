@@ -22,6 +22,7 @@ import HealthCertificate from './HealthCertificate';
 import OBDCharts from './OBDCharts';
 import SystemScan from './SystemScan';
 import SparePartsView from './SparePartsView';
+import MaintenanceForecast from './MaintenanceForecast';
 import HealthReportPDF from './HealthReportPDF';
 import VehicleQRCode from './VehicleQRCode';
 
@@ -201,6 +202,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
 
         {/* Component Health Rings */}
         <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
+
+        {/* Maintenance Forecast */}
+        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">

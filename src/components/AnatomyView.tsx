@@ -47,10 +47,11 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
     const interval = latest?.replacement_interval_km || mp.lifeKm;
     const lastOdo = latest?.odometer_at_service || 0;
     const kmSince = vehicle.current_odometer - lastOdo;
-    const lifeUsed = lastOdo > 0 ? Math.min(100, (kmSince / interval) * 100) : 100;
-    const lifeRemaining = Math.max(0, 100 - lifeUsed);
+    const hasData = lastOdo > 0;
+    const lifeUsed = hasData ? Math.min(100, (kmSince / interval) * 100) : 0;
+    const lifeRemaining = hasData ? Math.max(0, 100 - lifeUsed) : -1;
 
-    return { ...mp, latest, lifeUsed, lifeRemaining, kmSince, interval, hasData: lastOdo > 0 };
+    return { ...mp, latest, lifeUsed, lifeRemaining, kmSince, interval, hasData };
   });
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -100,9 +101,13 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-bold text-foreground">{p.label}</span>
               <div className="flex items-center gap-2">
-                <span className={`font-mono text-sm font-bold ${p.lifeRemaining >= 70 ? 'text-success' : p.lifeRemaining >= 40 ? 'text-accent' : 'text-destructive'}`}>
-                  {Math.round(p.lifeRemaining)}%
-                </span>
+                {p.hasData ? (
+                  <span className={`font-mono text-sm font-bold ${p.lifeRemaining >= 70 ? 'text-success' : p.lifeRemaining >= 40 ? 'text-accent' : 'text-destructive'}`}>
+                    {Math.round(p.lifeRemaining)}%
+                  </span>
+                ) : (
+                  <span className="font-mono text-xs font-medium text-muted-foreground">Not Logged</span>
+                )}
                 {p.latest && (
                   <button onClick={() => handleDelete(p.latest!)} className="rounded p-1 text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-3 w-3" />
@@ -111,8 +116,8 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
               </div>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mb-2">
-              <div className={`h-full rounded-full transition-all duration-700 ${barColor(p.lifeRemaining)}`}
-                style={{ width: `${p.lifeRemaining}%` }} />
+              <div className={`h-full rounded-full transition-all duration-700 ${p.hasData ? barColor(p.lifeRemaining) : 'bg-muted'}`}
+                style={{ width: p.hasData ? `${p.lifeRemaining}%` : '0%' }} />
             </div>
             <div className="flex justify-between font-mono text-xs text-muted-foreground">
               <span>{p.hasData ? `Installed: ${p.latest?.service_date}` : 'No data'}</span>

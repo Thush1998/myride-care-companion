@@ -26,9 +26,10 @@ const CircularRing = ({
 }) => {
   const r = 36;
   const circ = 2 * Math.PI * r;
-  const healthPct = Math.max(0, Math.round(100 - percent));
-  const offset = circ - (Math.min(healthPct, 100) / 100) * circ;
-  const isCritical = healthPct < 20;
+  const healthPct = hasData ? Math.max(0, Math.round(100 - percent)) : -1;
+  const offset = hasData ? circ - (Math.min(Math.max(0, 100 - percent), 100) / 100) * circ : circ;
+  const isCritical = hasData && healthPct < 20;
+  const isNotLogged = !hasData;
 
   return (
     <Popover>
@@ -40,24 +41,35 @@ const CircularRing = ({
             )}
             <svg viewBox="0 0 80 80" className="relative h-full w-full -rotate-90">
               <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
-              <circle
-                cx="40" cy="40" r={r} fill="none"
-                stroke={isCritical ? 'hsl(var(--destructive))' : color}
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeDasharray={circ}
-                strokeDashoffset={offset}
-                className="transition-all duration-700"
-                style={{ filter: `drop-shadow(0 0 ${isCritical ? '10px' : '6px'} ${isCritical ? 'hsl(var(--destructive))' : color})` }}
-              />
+              {!isNotLogged && (
+                <circle
+                  cx="40" cy="40" r={r} fill="none"
+                  stroke={isCritical ? 'hsl(var(--destructive))' : color}
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  strokeDasharray={circ}
+                  strokeDashoffset={offset}
+                  className="transition-all duration-700"
+                  style={{ filter: `drop-shadow(0 0 ${isCritical ? '10px' : '6px'} ${isCritical ? 'hsl(var(--destructive))' : color})` }}
+                />
+              )}
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className={`font-mono text-lg font-bold ${isCritical ? 'text-destructive' : 'text-foreground'}`}>
-                {healthPct}%
-              </span>
+              {isNotLogged ? (
+                <span className="font-mono text-[10px] font-medium text-muted-foreground">N/A</span>
+              ) : (
+                <span className={`font-mono text-lg font-bold ${isCritical ? 'text-destructive' : 'text-foreground'}`}>
+                  {healthPct}%
+                </span>
+              )}
             </div>
           </div>
           <span className={`font-display text-xs font-medium tracking-wider uppercase ${isCritical ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>{label}</span>
+          {isNotLogged && (
+            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+              Not Logged
+            </span>
+          )}
           {isCritical && (
             <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold text-destructive animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]">
               ⚠ CRITICAL

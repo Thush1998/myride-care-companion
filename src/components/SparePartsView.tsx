@@ -55,7 +55,14 @@ const SparePartsView = ({ vehicleId }: SparePartsViewProps) => {
       {isLoading ? (
         <p className="text-xs text-muted-foreground">Loading...</p>
       ) : !parts?.length ? (
-        <p className="py-4 text-center font-mono text-xs text-muted-foreground/60">No spare parts in stock. Add parts you have at home.</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <Package className="mb-3 h-12 w-12 text-muted-foreground/30" />
+          <p className="mb-1 text-sm font-medium text-muted-foreground">No parts in stock</p>
+          <p className="mb-4 text-xs text-muted-foreground/60">Track spare parts you have at home for quick reference.</p>
+          <Button onClick={() => setOpen(true)} className="gap-2 gradient-cyan text-primary-foreground font-semibold">
+            <Plus className="h-4 w-4" /> Add Part
+          </Button>
+        </div>
       ) : (
         <div className="space-y-2">
           {parts.map(p => (
