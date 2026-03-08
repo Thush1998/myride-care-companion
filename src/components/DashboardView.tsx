@@ -194,7 +194,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
 
         {/* Edit Vehicle Dialog */}
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="bg-card border-border">
+          <DialogContent className="bg-card border-border" aria-describedby={undefined}>
             <DialogHeader><DialogTitle className="font-display text-primary">Edit Vehicle</DialogTitle></DialogHeader>
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div><Label className="text-muted-foreground">Nickname</Label><Input value={editForm.nickname} onChange={e => setEditForm(f => ({ ...f, nickname: e.target.value }))} className="bg-input border-border" /></div>
