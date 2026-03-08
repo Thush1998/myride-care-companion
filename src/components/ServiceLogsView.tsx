@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Plus, Trash2, Pencil, ScanLine, Camera, FileText, Loader2, Sparkles } from 'lucide-react';
+import PartNameCombobox from '@/components/PartNameCombobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
