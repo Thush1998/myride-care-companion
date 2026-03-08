@@ -33,7 +33,7 @@ const VehicleHistory = () => {
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <img src={autodocLogo} alt="AutoDoc" className="h-10 w-10" />
+          <img src={driveDocLogo} alt="DriveDoc" className="h-10 w-10" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h1>
             <p className="text-sm text-muted-foreground">{vehicle.year} · {vehicle.plate_no}</p>
