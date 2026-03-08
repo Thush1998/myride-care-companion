@@ -4,6 +4,7 @@ import { Wrench, Calendar, DollarSign, Gauge, Phone, ChevronRight, CalendarClock
 import { format, differenceInDays, addDays } from 'date-fns';
 import driveDocLogo from '@/assets/drivedoc-logo.png';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const TRACKED_PARTS = [
   { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000, timeIntervalDays: 180 },
