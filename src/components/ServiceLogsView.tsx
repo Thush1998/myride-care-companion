@@ -342,9 +342,9 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={e => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
               <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_service} onChange={e => setForm(f => ({...f, odometer_at_service: e.target.value}))} placeholder="50000" className="bg-input border-border" /></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_service} onChange={e => setForm(f => ({...f, odometer_at_service: e.target.value}))} placeholder="50000" className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Replace Interval (km)</Label><Input type="number" value={form.replacement_interval_km} onChange={e => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" /></div>
+            <div>
+              <Label className="text-muted-foreground">Replace Interval (km)</Label>
+              <Input type="number" value={form.replacement_interval_km} onChange={e => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" />
             </div>
             <div><Label className="text-muted-foreground">Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))} placeholder="Synthetic oil change" className="bg-input border-border" /></div>
             <Button type="submit" disabled={addLog.isPending || updateLog.isPending} className="w-full gradient-cyan text-primary-foreground font-semibold">
