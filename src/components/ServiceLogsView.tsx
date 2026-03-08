@@ -25,7 +25,7 @@ const emptyForm = () => ({
   part_name: '', part_number: '', location_shop: '', price: '',
   service_date: new Date().toISOString().split('T')[0],
   odometer_at_service: '', replacement_interval_km: '', notes: '',
-  service_category: 'routine',
+  service_category: 'routine', brand_used: '',
 });
 
 const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
@@ -56,6 +56,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
       replacement_interval_km: log.replacement_interval_km != null ? String(log.replacement_interval_km) : '',
       notes: log.notes || '',
       service_category: (log as any).service_category || 'routine',
+      brand_used: (log as any).brand_used || '',
     });
     setOpen(true);
   };
@@ -74,6 +75,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: form.replacement_interval_km ? parseFloat(form.replacement_interval_km) : null,
         notes: form.notes.trim() || null,
         service_category: form.service_category,
+        brand_used: form.brand_used.trim() || null,
       };
       if (editingId) {
         await updateLog.mutateAsync({ id: editingId, vehicleId: vehicle.id, ...payload });
@@ -141,6 +143,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: '',
         notes: r.notes || (r.parts?.length > 1 ? `Parts: ${r.parts.map((p: any) => p.name).join(', ')}` : ''),
         service_category: r.category || 'routine',
+        brand_used: firstPart?.brand || '',
       });
     } else {
       // Part scan → fill from part identification
@@ -154,6 +157,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: '',
         notes: `Condition: ${r.condition || 'unknown'}. ${r.recommended_action || ''} ${r.notes || ''}`.trim(),
         service_category: r.category || 'routine',
+        brand_used: r.brand || '',
       });
     }
 
@@ -330,15 +334,19 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Part Number</Label><Input value={form.part_number} onChange={e => setForm(f => ({...f, part_number: e.target.value}))} placeholder="OEM-12345" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Brand Used</Label><Input value={form.brand_used} onChange={e => setForm(f => ({...f, brand_used: e.target.value}))} placeholder="Sakura, Vic, OEM..." className="bg-input border-border" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Shop / Location</Label><Input value={form.location_shop} onChange={e => setForm(f => ({...f, location_shop: e.target.value}))} placeholder="AutoZone" className="bg-input border-border" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={e => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={e => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
               <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_service} onChange={e => setForm(f => ({...f, odometer_at_service: e.target.value}))} placeholder="50000" className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Replace Interval (km)</Label><Input type="number" value={form.replacement_interval_km} onChange={e => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" /></div>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Replace Interval (km)</Label>
+              <Input type="number" value={form.replacement_interval_km} onChange={e => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" />
             </div>
             <div><Label className="text-muted-foreground">Notes</Label><Input value={form.notes} onChange={e => setForm(f => ({...f, notes: e.target.value}))} placeholder="Synthetic oil change" className="bg-input border-border" /></div>
             <Button type="submit" disabled={addLog.isPending || updateLog.isPending} className="w-full gradient-cyan text-primary-foreground font-semibold">
@@ -364,6 +372,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground">{log.part_name}</span>
                   {log.part_number && <span className="font-mono text-xs text-muted-foreground">#{log.part_number}</span>}
+                  {(log as any).brand_used && <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground">{(log as any).brand_used}</span>}
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getCatColor((log as any).service_category || 'routine')}`}>
                     {getCatLabel((log as any).service_category || 'routine')}
                   </span>

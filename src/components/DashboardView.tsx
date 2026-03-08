@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Gauge, Wrench, AlertTriangle, TrendingUp, Car, Pencil, Camera, Activity } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { Gauge, Wrench, AlertTriangle, TrendingUp, Car, Pencil, Camera, Activity, DollarSign } from 'lucide-react';
 import { Vehicle, useUpdateVehicle } from '@/hooks/useVehicles';
 import { useServiceLogs } from '@/hooks/useServiceLogs';
 import { useTrips } from '@/hooks/useTrips';
@@ -21,6 +21,8 @@ import PredictiveAlerts from './PredictiveAlerts';
 import HealthCertificate from './HealthCertificate';
 import OBDCharts from './OBDCharts';
 import SystemScan from './SystemScan';
+import SparePartsView from './SparePartsView';
+import HealthReportPDF from './HealthReportPDF';
 
 interface DashboardViewProps {
   vehicle: Vehicle;
@@ -45,6 +47,8 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const totalSpent = (services?.reduce((sum, s) => sum + (s.price || 0), 0) ?? 0)
     + (mods?.reduce((sum, m) => sum + (m.cost || 0), 0) ?? 0);
   const fuelSpent = fuelLogs?.reduce((sum, f) => sum + (f.total_cost || 0), 0) ?? 0;
+  const grandTotal = totalSpent + fuelSpent;
+  const cpk = vehicle.current_odometer > 0 ? (grandTotal / vehicle.current_odometer).toFixed(2) : '0.00';
 
   const warnings = (services || []).filter((s) => {
     if (!s.replacement_interval_km || !s.odometer_at_service) return false;
@@ -56,7 +60,6 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     return differenceInDays(new Date(d.expiry_date), new Date()) <= 30;
   });
 
-  // Build scan items from health data
   const scanItems = [
     { label: 'Engine Oil System', status: 'ok' as const, value: 92 },
     { label: 'Brake Components', status: 'ok' as const, value: 85 },
@@ -177,7 +180,15 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           </DialogContent>
         </Dialog>
 
-        {/* Health Certificate */}
+        {/* Health Certificate + Report Button */}
+        <div className="flex items-center justify-between">
+          <HealthReportPDF
+            vehicleName={`${vehicle.make} ${vehicle.model}`}
+            plateNo={vehicle.plate_no}
+            odometer={vehicle.current_odometer}
+            services={services || []}
+          />
+        </div>
         <HealthCertificate
           services={services || []}
           currentOdometer={vehicle.current_odometer}
@@ -188,11 +199,12 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
           <StatCard icon={TrendingUp} label="Service + Mods" value={`$${totalSpent.toLocaleString()}`} />
           <StatCard icon={Activity} label="Fuel Spent" value={`$${fuelSpent.toLocaleString()}`} />
+          <StatCard icon={DollarSign} label="Cost/km" value={`$${cpk}`} highlight />
         </div>
 
         {/* OBD Charts */}
@@ -203,6 +215,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           <SpendingChart services={services || []} />
           <PredictiveAlerts services={services || []} fuelLogs={fuelLogs || []} currentOdometer={vehicle.current_odometer} />
         </div>
+
+        {/* Spare Parts Inventory */}
+        <SparePartsView vehicleId={vehicle.id} />
 
         {/* Warnings */}
         {(warnings.length > 0 || expiringDocs.length > 0) && (
@@ -255,14 +270,14 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   );
 };
 
-const StatCard = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <div className="glass-card neon-border flex items-center gap-4 p-4">
-    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+const StatCard = ({ icon: Icon, label, value, highlight }: { icon: any; label: string; value: string; highlight?: boolean }) => (
+  <div className={`glass-card neon-border flex items-center gap-4 p-4 ${highlight ? 'border-primary/40' : ''}`}>
+    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${highlight ? 'bg-primary/20' : 'bg-primary/10'}`}>
       <Icon className="h-5 w-5 text-primary" />
     </div>
     <div>
       <div className="font-display text-xs tracking-wider text-muted-foreground uppercase">{label}</div>
-      <div className="font-mono text-lg font-semibold text-foreground">{value}</div>
+      <div className={`font-mono text-lg font-semibold ${highlight ? 'text-primary' : 'text-foreground'}`}>{value}</div>
     </div>
   </div>
 );

@@ -1,0 +1,102 @@
+import { Button } from '@/components/ui/button';
+import { FileText } from 'lucide-react';
+import { ServiceLog } from '@/hooks/useServiceLogs';
+import { format } from 'date-fns';
+
+interface HealthReportPDFProps {
+  vehicleName: string;
+  plateNo: string;
+  odometer: number;
+  services: ServiceLog[];
+}
+
+const TRACKED_PARTS = [
+  { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000 },
+  { key: 'brake pad', label: 'Brake Pads', defaultInterval: 40000 },
+  { key: 'timing belt', label: 'Timing Belt', defaultInterval: 100000 },
+  { key: 'gear oil', label: 'Gear Oil', defaultInterval: 40000 },
+  { key: 'tire', label: 'Tires', defaultInterval: 50000 },
+  { key: 'air filter', label: 'Air Filter', defaultInterval: 20000 },
+];
+
+const generateReport = ({ vehicleName, plateNo, odometer, services }: HealthReportPDFProps) => {
+  const totalSpent = services.reduce((sum, s) => sum + (s.price || 0), 0);
+
+  const healthRows = TRACKED_PARTS.map(tp => {
+    const matching = services
+      .filter(s => s.part_name.toLowerCase().includes(tp.key))
+      .sort((a, b) => (b.odometer_at_service || 0) - (a.odometer_at_service || 0));
+    const latest = matching[0];
+    const interval = latest?.replacement_interval_km || tp.defaultInterval;
+    const lastOdo = latest?.odometer_at_service || 0;
+    const kmSince = odometer - lastOdo;
+    const health = lastOdo > 0 ? Math.max(0, Math.round(100 - (kmSince / interval) * 100)) : 0;
+    return { label: tp.label, health, lastDate: latest?.service_date || null, lastOdo, brand: (latest as any)?.brand_used || '—' };
+  });
+
+  const serviceRows = services.map(s =>
+    `<tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${format(new Date(s.service_date), 'yyyy-MM-dd')}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${s.part_name}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${s.location_shop || '—'}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:right">$${s.price || 0}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:right">${s.odometer_at_service?.toLocaleString() || '—'} km</td>
+    </tr>`
+  ).join('');
+
+  const healthTableRows = healthRows.map(h =>
+    `<tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${h.label}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:center;color:${h.health >= 70 ? '#00e5cc' : h.health >= 40 ? '#f59e0b' : '#ef4444'};font-weight:bold">${h.health}%</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${h.lastDate ? format(new Date(h.lastDate), 'MMM d, yyyy') : 'Never'}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${h.brand}</td>
+    </tr>`
+  ).join('');
+
+  const html = `<!DOCTYPE html><html><head><title>AutoDoc Health Report - ${vehicleName}</title>
+<style>
+  body{font-family:'Segoe UI',sans-serif;background:#0a1628;color:#c4d6e8;margin:0;padding:40px}
+  h1{color:#00e5cc;margin:0 0 4px}
+  h2{color:#00e5cc;font-size:14px;text-transform:uppercase;letter-spacing:2px;margin:30px 0 10px;border-bottom:1px solid #1a3a5a;padding-bottom:6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:8px 10px;background:#0d1f3c;color:#00e5cc;font-size:11px;text-transform:uppercase;letter-spacing:1px}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+  .stat{background:#0d1f3c;border-radius:8px;padding:14px 18px;text-align:center}
+  .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#6b8aaa}
+  .stat-value{font-size:22px;font-weight:bold;color:#00e5cc;margin-top:4px}
+  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+</style></head><body>
+<div class="header">
+  <div><h1>AutoDoc Health Report</h1><p style="margin:0;color:#6b8aaa">${vehicleName} · ${plateNo}</p><p style="margin:4px 0 0;font-size:12px;color:#4a6a8a">Generated: ${format(new Date(), 'MMMM d, yyyy')}</p></div>
+</div>
+<div class="stats-grid">
+  <div class="stat"><div class="stat-label">Odometer</div><div class="stat-value">${odometer.toLocaleString()} km</div></div>
+  <div class="stat"><div class="stat-label">Total Services</div><div class="stat-value">${services.length}</div></div>
+  <div class="stat"><div class="stat-label">Total Spent</div><div class="stat-value">$${totalSpent.toLocaleString()}</div></div>
+</div>
+<h2>Component Health Status</h2>
+<table><thead><tr><th>Component</th><th style="text-align:center">Health</th><th>Last Service</th><th>Brand</th></tr></thead><tbody>${healthTableRows}</tbody></table>
+<h2>Full Service History</h2>
+<table><thead><tr><th>Date</th><th>Part</th><th>Shop</th><th style="text-align:right">Cost</th><th style="text-align:right">Odometer</th></tr></thead><tbody>${serviceRows}</tbody></table>
+<p style="margin-top:30px;text-align:center;font-size:11px;color:#3a5a7a">Report generated by AutoDoc · Vehicle Diagnostics Platform</p>
+</body></html>`;
+
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(html);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  }
+};
+
+const HealthReportPDF = (props: HealthReportPDFProps) => (
+  <Button
+    onClick={() => generateReport(props)}
+    variant="outline"
+    className="gap-2 border-primary/30 text-primary hover:bg-primary/10 font-semibold"
+  >
+    <FileText className="h-4 w-4" /> Generate Health Report
+  </Button>
+);
+
+export default HealthReportPDF;
