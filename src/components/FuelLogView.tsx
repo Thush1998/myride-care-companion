@@ -102,10 +102,42 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Fuel Log</h2>
-        <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
-          <Plus className="h-4 w-4" /> Add Fill-up
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setOdoDialogOpen(true)} className="gap-2 border-border text-foreground">
+            <Gauge className="h-4 w-4" /> Update Odometer
+          </Button>
+          <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+            <Plus className="h-4 w-4" /> Add Fill-up
+          </Button>
+        </div>
       </div>
+
+      {/* Update Odometer Dialog */}
+      <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader><DialogTitle className="text-foreground">Update Odometer</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Current: <span className="font-mono font-semibold text-foreground">{Number(vehicle.current_odometer).toLocaleString()} km</span></p>
+            <div>
+              <Label className="text-muted-foreground">New Odometer (km)</Label>
+              <Input type="number" value={newOdometer} onChange={e => setNewOdometer(e.target.value)} placeholder={String(vehicle.current_odometer + 1)} className="bg-input border-border font-mono" />
+              {newOdometer && parseFloat(newOdometer) <= vehicle.current_odometer && (
+                <p className="mt-1 text-xs text-destructive">Must be greater than {vehicle.current_odometer.toLocaleString()} km</p>
+              )}
+            </div>
+            <Button onClick={async () => {
+              const val = parseFloat(newOdometer);
+              if (isNaN(val) || val <= vehicle.current_odometer) { toast.error('Odometer must be greater than current value'); return; }
+              await updateOdometer.mutateAsync({ id: vehicle.id, odometer: val });
+              toast.success('Odometer updated');
+              setNewOdometer('');
+              setOdoDialogOpen(false);
+            }} disabled={updateOdometer.isPending || !newOdometer || parseFloat(newOdometer) <= vehicle.current_odometer} className="w-full gradient-amber text-primary-foreground font-semibold">
+              {updateOdometer.isPending ? 'Updating...' : 'Update Odometer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">

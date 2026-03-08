@@ -86,6 +86,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     await updateOdometer.mutateAsync({ id: vehicle.id, odometer: val });
     toast.success('Odometer updated');
     setNewOdometer('');
+    setOdoDialogOpen(false);
   };
 
   const openEdit = () => {
