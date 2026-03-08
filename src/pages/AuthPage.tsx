@@ -21,9 +21,9 @@ const AuthPage = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="animate-fade-in flex flex-col items-center gap-8 px-6">
         <div className="flex items-center gap-4">
-          <img src={autoDocLogo} alt="AutoDoc" className="h-14 w-14 rounded-xl" />
+          <img src={driveDocLogo} alt="DriveDoc" className="h-14 w-14 rounded-xl" />
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-wider text-primary uppercase">AutoDoc</h1>
+            <h1 className="font-display text-3xl font-bold tracking-wider text-primary uppercase">DriveDoc</h1>
             <p className="text-sm text-muted-foreground">Vehicle Diagnostics</p>
           </div>
         </div>
