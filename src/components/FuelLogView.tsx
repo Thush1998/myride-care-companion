@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useFuelLogs, useAddFuelLog, useUpdateFuelLog, useDeleteFuelLog, FuelLog } from '@/hooks/useFuelLogs';
-import { Vehicle } from '@/hooks/useVehicles';
+import { Vehicle, useUpdateOdometer } from '@/hooks/useVehicles';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -25,9 +25,12 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const addLog = useAddFuelLog();
   const updateLog = useUpdateFuelLog();
   const deleteLog = useDeleteFuelLog();
+  const updateOdometer = useUpdateOdometer();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
+  const [odoDialogOpen, setOdoDialogOpen] = useState(false);
+  const [newOdometer, setNewOdometer] = useState('');
 
   const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
   const avgKmPerL = calcKmPerLiter(logs || []);
@@ -50,6 +53,10 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.liters) { toast.error('Liters is required'); return; }
+    if (form.odometer_at_fill && parseFloat(form.odometer_at_fill) < vehicle.current_odometer) {
+      toast.error(`Odometer cannot be less than current reading (${vehicle.current_odometer.toLocaleString()} km)`);
+      return;
+    }
     try {
       const payload = {
         liters: parseFloat(form.liters),
@@ -67,6 +74,10 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
       } else {
         await addLog.mutateAsync({ vehicle_id: vehicle.id, ...payload as any });
         toast.success('Fuel log added!');
+      }
+      // Sync vehicle odometer if fuel log odometer is higher
+      if (payload.odometer_at_fill && payload.odometer_at_fill > vehicle.current_odometer) {
+        await updateOdometer.mutateAsync({ id: vehicle.id, odometer: payload.odometer_at_fill });
       }
       setOpen(false); setForm(emptyForm()); setEditingId(null);
     } catch { toast.error('Failed to save fuel log'); }
@@ -91,10 +102,42 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Fuel Log</h2>
-        <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
-          <Plus className="h-4 w-4" /> Add Fill-up
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setOdoDialogOpen(true)} className="gap-2 border-border text-foreground">
+            <Gauge className="h-4 w-4" /> Update Odometer
+          </Button>
+          <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+            <Plus className="h-4 w-4" /> Add Fill-up
+          </Button>
+        </div>
       </div>
+
+      {/* Update Odometer Dialog */}
+      <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader><DialogTitle className="text-foreground">Update Odometer</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Current: <span className="font-mono font-semibold text-foreground">{Number(vehicle.current_odometer).toLocaleString()} km</span></p>
+            <div>
+              <Label className="text-muted-foreground">New Odometer (km)</Label>
+              <Input type="number" value={newOdometer} onChange={e => setNewOdometer(e.target.value)} placeholder={String(vehicle.current_odometer + 1)} className="bg-input border-border font-mono" />
+              {newOdometer && parseFloat(newOdometer) <= vehicle.current_odometer && (
+                <p className="mt-1 text-xs text-destructive">Must be greater than {vehicle.current_odometer.toLocaleString()} km</p>
+              )}
+            </div>
+            <Button onClick={async () => {
+              const val = parseFloat(newOdometer);
+              if (isNaN(val) || val <= vehicle.current_odometer) { toast.error('Odometer must be greater than current value'); return; }
+              await updateOdometer.mutateAsync({ id: vehicle.id, odometer: val });
+              toast.success('Odometer updated');
+              setNewOdometer('');
+              setOdoDialogOpen(false);
+            }} disabled={updateOdometer.isPending || !newOdometer || parseFloat(newOdometer) <= vehicle.current_odometer} className="w-full gradient-amber text-primary-foreground font-semibold">
+              {updateOdometer.isPending ? 'Updating...' : 'Update Odometer'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
@@ -106,7 +149,13 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Total Cost</Label><Input type="number" step="0.01" value={form.total_cost} onChange={(e) => setForm(f => ({ ...f, total_cost: e.target.value }))} placeholder="74.00" className="bg-input border-border font-mono" /></div>
-              <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" /></div>
+              <div>
+                <Label className="text-muted-foreground">Odometer</Label>
+                <Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" />
+                {form.odometer_at_fill && parseFloat(form.odometer_at_fill) < vehicle.current_odometer && (
+                  <p className="mt-1 text-xs text-destructive">Cannot be less than {vehicle.current_odometer.toLocaleString()} km</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.fuel_date} onChange={(e) => setForm(f => ({ ...f, fuel_date: e.target.value }))} className="bg-input border-border" /></div>

@@ -45,6 +45,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '' });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showScan, setShowScan] = useState(true);
+  const [odoDialogOpen, setOdoDialogOpen] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
 
   const totalSpent = (services?.reduce((sum, s) => sum + (s.price || 0), 0) ?? 0)
@@ -85,6 +86,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     await updateOdometer.mutateAsync({ id: vehicle.id, odometer: val });
     toast.success('Odometer updated');
     setNewOdometer('');
+    setOdoDialogOpen(false);
   };
 
   const openEdit = () => {
@@ -154,6 +156,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <div className="text-right">
                   <div className="font-mono text-3xl font-bold text-primary">{Number(vehicle.current_odometer).toLocaleString()}</div>
                   <div className="font-display text-xs tracking-wider text-muted-foreground uppercase">kilometers</div>
+                  <button onClick={() => setOdoDialogOpen(true)} className="mt-1 inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-xs font-semibold text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground">
+                    <Gauge className="h-3 w-3" /> Update Odometer
+                  </button>
                 </div>
                 <button onClick={openEdit} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">
                   <Pencil className="h-4 w-4" />
@@ -162,6 +167,26 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
             </div>
           </div>
         </div>
+
+        {/* Update Odometer Dialog */}
+        <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
+          <DialogContent className="bg-card border-border max-w-sm">
+            <DialogHeader><DialogTitle className="font-display text-primary">Update Odometer</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">Current reading: <span className="font-mono font-semibold text-foreground">{Number(vehicle.current_odometer).toLocaleString()} km</span></p>
+              <div>
+                <Label className="text-muted-foreground">New Odometer (km)</Label>
+                <Input type="number" value={newOdometer} onChange={e => setNewOdometer(e.target.value)} placeholder={String(vehicle.current_odometer + 1)} className="bg-input border-border font-mono" />
+                {newOdometer && parseFloat(newOdometer) <= vehicle.current_odometer && (
+                  <p className="mt-1 text-xs text-destructive">Must be greater than {vehicle.current_odometer.toLocaleString()} km</p>
+                )}
+              </div>
+              <Button onClick={handleOdometerUpdate} disabled={updateOdometer.isPending || !newOdometer || parseFloat(newOdometer) <= vehicle.current_odometer} className="w-full gradient-cyan text-primary-foreground font-semibold">
+                {updateOdometer.isPending ? 'Updating...' : 'Update Odometer'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Vehicle Dialog */}
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
