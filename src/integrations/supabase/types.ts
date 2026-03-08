@@ -331,11 +331,16 @@ export type Database = {
       }
       vehicles: {
         Row: {
+          brake_fluid_capacity: string | null
           chassis_number: string | null
           color: string | null
+          coolant_capacity: string | null
           created_at: string
           current_odometer: number
+          cylinder_head_torque: string | null
           engine_number: string | null
+          engine_oil_capacity: string | null
+          gear_oil_capacity: string | null
           id: string
           image_url: string | null
           make: string
@@ -344,17 +349,24 @@ export type Database = {
           oil_grade: string | null
           paint_code: string | null
           plate_no: string
+          power_steering_fluid: string | null
           tire_pressure_psi: number | null
           updated_at: string
           user_id: string
+          wheel_nut_torque: string | null
           year: number
         }
         Insert: {
+          brake_fluid_capacity?: string | null
           chassis_number?: string | null
           color?: string | null
+          coolant_capacity?: string | null
           created_at?: string
           current_odometer?: number
+          cylinder_head_torque?: string | null
           engine_number?: string | null
+          engine_oil_capacity?: string | null
+          gear_oil_capacity?: string | null
           id?: string
           image_url?: string | null
           make: string
@@ -363,17 +375,24 @@ export type Database = {
           oil_grade?: string | null
           paint_code?: string | null
           plate_no: string
+          power_steering_fluid?: string | null
           tire_pressure_psi?: number | null
           updated_at?: string
           user_id: string
+          wheel_nut_torque?: string | null
           year: number
         }
         Update: {
+          brake_fluid_capacity?: string | null
           chassis_number?: string | null
           color?: string | null
+          coolant_capacity?: string | null
           created_at?: string
           current_odometer?: number
+          cylinder_head_torque?: string | null
           engine_number?: string | null
+          engine_oil_capacity?: string | null
+          gear_oil_capacity?: string | null
           id?: string
           image_url?: string | null
           make?: string
@@ -382,9 +401,11 @@ export type Database = {
           oil_grade?: string | null
           paint_code?: string | null
           plate_no?: string
+          power_steering_fluid?: string | null
           tire_pressure_psi?: number | null
           updated_at?: string
           user_id?: string
+          wheel_nut_torque?: string | null
           year?: number
         }
         Relationships: []

@@ -23,6 +23,7 @@ import OBDCharts from './OBDCharts';
 import SystemScan from './SystemScan';
 import SparePartsView from './SparePartsView';
 import HealthReportPDF from './HealthReportPDF';
+import VehicleQRCode from './VehicleQRCode';
 
 interface DashboardViewProps {
   vehicle: Vehicle;
@@ -180,14 +181,17 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           </DialogContent>
         </Dialog>
 
-        {/* Health Certificate + Report Button */}
+        {/* Health Certificate + Report + QR */}
         <div className="flex items-center justify-between">
-          <HealthReportPDF
-            vehicleName={`${vehicle.make} ${vehicle.model}`}
-            plateNo={vehicle.plate_no}
-            odometer={vehicle.current_odometer}
-            services={services || []}
-          />
+          <div className="flex items-center gap-2">
+            <HealthReportPDF
+              vehicleName={`${vehicle.make} ${vehicle.model}`}
+              plateNo={vehicle.plate_no}
+              odometer={vehicle.current_odometer}
+              services={services || []}
+            />
+            <VehicleQRCode vehicleId={vehicle.id} vehicleName={`${vehicle.make} ${vehicle.model}`} plateNo={vehicle.plate_no} />
+          </div>
         </div>
         <HealthCertificate
           services={services || []}
