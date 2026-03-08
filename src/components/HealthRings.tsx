@@ -30,6 +30,7 @@ const CircularRing = ({ percent, label, color }: { percent: number; label: strin
             strokeDasharray={circ}
             strokeDashoffset={offset}
             className="transition-all duration-700"
+            style={{ filter: `drop-shadow(0 0 6px ${color})` }}
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -38,14 +39,13 @@ const CircularRing = ({ percent, label, color }: { percent: number; label: strin
           </span>
         </div>
       </div>
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="font-display text-xs font-medium tracking-wider text-muted-foreground uppercase">{label}</span>
     </div>
   );
 };
 
 const HealthRings = ({ services, currentOdometer }: HealthRingsProps) => {
   const parts = TRACKED_PARTS.map(tp => {
-    // Find the most recent service log matching this part (case-insensitive)
     const matching = services
       .filter(s => s.part_name.toLowerCase().includes(tp.key))
       .sort((a, b) => (b.odometer_at_service || 0) - (a.odometer_at_service || 0));
@@ -58,20 +58,20 @@ const HealthRings = ({ services, currentOdometer }: HealthRingsProps) => {
 
     let color = 'hsl(var(--success))';
     if (usedPercent >= 100) color = 'hsl(var(--destructive))';
-    else if (usedPercent >= 80) color = 'hsl(var(--warning))';
+    else if (usedPercent >= 80) color = 'hsl(var(--accent))';
 
     return { ...tp, usedPercent, color, hasData: lastOdo > 0 };
   });
 
   return (
-    <div className="glass-card p-5">
-      <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Component Health</h3>
+    <div className="glass-card neon-border p-5">
+      <h3 className="mb-4 font-display text-xs font-bold tracking-wider text-primary uppercase">Component Health Scan</h3>
       <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
         {parts.map(p => (
           <CircularRing key={p.key} percent={p.usedPercent} label={p.label} color={p.color} />
         ))}
       </div>
-      <p className="mt-3 text-center text-xs text-muted-foreground/60">
+      <p className="mt-3 text-center font-mono text-xs text-muted-foreground/60">
         Health based on mileage since last service. Log services with matching part names to track.
       </p>
     </div>
