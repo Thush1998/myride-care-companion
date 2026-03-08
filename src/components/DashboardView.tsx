@@ -207,7 +207,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
           <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
           <StatCard icon={TrendingUp} label="Service + Mods" value={`Rs. ${totalSpent.toLocaleString()}`} />
