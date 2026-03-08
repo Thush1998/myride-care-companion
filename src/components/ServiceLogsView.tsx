@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Plus, Trash2, Pencil, ScanLine, Camera, FileText, Loader2, Sparkles } from 'lucide-react';
+import PartNameCombobox from '@/components/PartNameCombobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -322,7 +323,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-muted-foreground">Part Name *</Label><Input value={form.part_name} onChange={e => setForm(f => ({...f, part_name: e.target.value}))} placeholder="Oil Filter" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Part Name *</Label><PartNameCombobox value={form.part_name} onChange={v => setForm(f => ({...f, part_name: v}))} /></div>
               <div><Label className="text-muted-foreground">Category</Label>
                 <Select value={form.service_category} onValueChange={v => setForm(f => ({...f, service_category: v}))}>
                   <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
