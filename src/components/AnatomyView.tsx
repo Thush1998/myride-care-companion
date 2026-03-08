@@ -116,8 +116,8 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
               </div>
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-secondary mb-2">
-              <div className={`h-full rounded-full transition-all duration-700 ${barColor(p.lifeRemaining)}`}
-                style={{ width: `${p.lifeRemaining}%` }} />
+              <div className={`h-full rounded-full transition-all duration-700 ${p.hasData ? barColor(p.lifeRemaining) : 'bg-muted'}`}
+                style={{ width: p.hasData ? `${p.lifeRemaining}%` : '0%' }} />
             </div>
             <div className="flex justify-between font-mono text-xs text-muted-foreground">
               <span>{p.hasData ? `Installed: ${p.latest?.service_date}` : 'No data'}</span>
