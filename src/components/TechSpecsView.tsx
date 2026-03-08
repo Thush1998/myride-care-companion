@@ -28,7 +28,7 @@ const FLUID_FIELDS: FieldDef[] = [
   { key: 'power_steering_fluid', label: 'Power Steering Fluid', placeholder: 'e.g. Dexron III' },
 ];
 
-const TORQUE_FIELDS = [
+const TORQUE_FIELDS: FieldDef[] = [
   { key: 'wheel_nut_torque', label: 'Wheel Nut Torque', placeholder: 'e.g. 100 Nm' },
   { key: 'cylinder_head_torque', label: 'Cylinder Head Torque', placeholder: 'e.g. 78 Nm (3 stages)' },
 ];
