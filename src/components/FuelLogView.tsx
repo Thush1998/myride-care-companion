@@ -71,6 +71,10 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
         await addLog.mutateAsync({ vehicle_id: vehicle.id, ...payload as any });
         toast.success('Fuel log added!');
       }
+      // Sync vehicle odometer if fuel log odometer is higher
+      if (payload.odometer_at_fill && payload.odometer_at_fill > vehicle.current_odometer) {
+        await updateOdometer.mutateAsync({ id: vehicle.id, odometer: payload.odometer_at_fill });
+      }
       setOpen(false); setForm(emptyForm()); setEditingId(null);
     } catch { toast.error('Failed to save fuel log'); }
   };
