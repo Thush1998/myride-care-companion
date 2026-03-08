@@ -101,9 +101,13 @@ const AnatomyView = ({ vehicle, services }: AnatomyViewProps) => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-bold text-foreground">{p.label}</span>
               <div className="flex items-center gap-2">
-                <span className={`font-mono text-sm font-bold ${p.lifeRemaining >= 70 ? 'text-success' : p.lifeRemaining >= 40 ? 'text-accent' : 'text-destructive'}`}>
-                  {Math.round(p.lifeRemaining)}%
-                </span>
+                {p.hasData ? (
+                  <span className={`font-mono text-sm font-bold ${p.lifeRemaining >= 70 ? 'text-success' : p.lifeRemaining >= 40 ? 'text-accent' : 'text-destructive'}`}>
+                    {Math.round(p.lifeRemaining)}%
+                  </span>
+                ) : (
+                  <span className="font-mono text-xs font-medium text-muted-foreground">Not Logged</span>
+                )}
                 {p.latest && (
                   <button onClick={() => handleDelete(p.latest!)} className="rounded p-1 text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-3 w-3" />
