@@ -66,9 +66,7 @@ const Index = () => {
           </div>
         ) : !selectedVehicle ? (
           <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 glow-cyan">
-              <Activity className="h-10 w-10 text-primary" />
-            </div>
+            <img src={autoDocLogo} alt="AutoDoc" className="h-20 w-20 rounded-2xl glow-cyan" />
             <h2 className="font-display text-xl font-bold tracking-wider text-foreground uppercase">Welcome to AutoDoc</h2>
             <p className="max-w-sm text-muted-foreground">
               Your vehicle diagnostic center. Add your first vehicle to begin monitoring health, service intervals, and performance data.
