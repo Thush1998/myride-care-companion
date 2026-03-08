@@ -68,35 +68,46 @@ const VehicleHistory = () => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
       try {
-        const backendUrl = import.meta.env.VITE_SUPABASE_URL;
+        const primaryBackendUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+        const fallbackBackendUrl = 'https://vpgebrgwuneqgrprhoxg.supabase.co';
+        const backendUrls = [primaryBackendUrl, fallbackBackendUrl].filter(
+          (value, index, arr): value is string => !!value && arr.indexOf(value) === index
+        );
 
-        if (!backendUrl) {
-          setError('Backend configuration missing');
-          setLoading(false);
-          return;
-        }
+        let lastError = 'Failed to load vehicle data';
 
-        const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
-        const res = await fetch(endpoint);
+        for (const backendUrl of backendUrls) {
+          const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
+          const res = await fetch(endpoint);
 
-        if (!res.ok) {
-          let backendError = '';
-          try {
-            const payload = await res.json();
-            backendError = payload?.error || payload?.message || '';
-          } catch {
-            backendError = '';
+          if (res.ok) {
+            const data = await res.json();
+            setVehicle(data.vehicle);
+            setServices(data.services || []);
+            setMods(data.modifications || []);
+            setLoading(false);
+            return;
           }
 
-          setError(backendError || (res.status === 404 ? 'Vehicle not found' : 'Failed to load vehicle data'));
-          setLoading(false);
-          return;
+          let payload: any = null;
+          try {
+            payload = await res.json();
+          } catch {
+            payload = null;
+          }
+
+          const message = payload?.error || payload?.message || '';
+          lastError = message || (res.status === 404 ? 'Vehicle not found' : 'Failed to load vehicle data');
+
+          const missingFunction = res.status === 404 && message.toLowerCase().includes('function was not found');
+          if (!missingFunction) {
+            setError(lastError);
+            setLoading(false);
+            return;
+          }
         }
 
-        const data = await res.json();
-        setVehicle(data.vehicle);
-        setServices(data.services || []);
-        setMods(data.modifications || []);
+        setError(lastError);
       } catch (e) {
         setError('Failed to load vehicle data');
       }
