@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useFuelLogs, useAddFuelLog, useUpdateFuelLog, useDeleteFuelLog, FuelLog } from '@/hooks/useFuelLogs';
-import { Vehicle } from '@/hooks/useVehicles';
+import { Vehicle, useUpdateOdometer } from '@/hooks/useVehicles';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
