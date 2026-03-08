@@ -3,25 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { VEHICLE_CATEGORIES, getTrackedParts, type VehicleCategory } from '@/lib/vehicleCategories';
 
 interface AddVehicleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const TRACKED_COMPONENTS = [
-  { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000 },
-  { key: 'timing belt', label: 'Timing Belt', defaultInterval: 100000 },
-  { key: 'gear oil', label: 'Gear Oil', defaultInterval: 40000 },
-  { key: 'brake pad', label: 'Brake Pads', defaultInterval: 40000 },
-  { key: 'air filter', label: 'Air Filter', defaultInterval: 20000 },
-  { key: 'tire', label: 'Tires', defaultInterval: 50000 },
-];
 
 const INSPECTION_ITEMS = [
   { key: 'oil_leaks', label: 'No Oil Leaks' },
