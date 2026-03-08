@@ -12,7 +12,18 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const vehicleId = url.searchParams.get("id");
+    let vehicleId = url.searchParams.get("id");
+
+    if (!vehicleId && req.method !== "GET" && req.method !== "HEAD") {
+      try {
+        const body = await req.json();
+        if (typeof body?.id === "string") {
+          vehicleId = body.id;
+        }
+      } catch {
+        // Ignore invalid JSON body and fall through to validation error
+      }
+    }
 
     if (!vehicleId) {
       return new Response(JSON.stringify({ error: "Missing vehicle ID" }), {
