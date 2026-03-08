@@ -141,7 +141,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
               </button>
               <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
             </div>
-            <div className="flex flex-1 items-center justify-between p-6">
+            <div className="flex flex-1 flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 gap-3">
               <div>
                 {vehicle.nickname && <p className="mb-1 font-display text-xs font-bold tracking-wider text-primary uppercase">{vehicle.nickname}</p>}
                 <h2 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h2>
