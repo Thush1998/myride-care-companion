@@ -53,6 +53,10 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.liters) { toast.error('Liters is required'); return; }
+    if (form.odometer_at_fill && parseFloat(form.odometer_at_fill) < vehicle.current_odometer) {
+      toast.error(`Odometer cannot be less than current reading (${vehicle.current_odometer.toLocaleString()} km)`);
+      return;
+    }
     try {
       const payload = {
         liters: parseFloat(form.liters),
