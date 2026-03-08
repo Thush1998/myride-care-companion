@@ -59,7 +59,7 @@ const Index = () => {
         onTabChange={setActiveTab}
       />
 
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+      <main className="flex-1 overflow-y-auto p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         {vehiclesLoading ? (
           <div className="flex h-full items-center justify-center">
             <Activity className="h-8 w-8 text-primary animate-pulse" />
