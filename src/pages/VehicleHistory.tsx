@@ -83,6 +83,12 @@ const VehicleHistory = () => {
         }
 
         const data = await res.json();
+        setVehicle(data.vehicle);
+        setServices(data.services || []);
+        setMods(data.modifications || []);
+      } catch (e) {
+        setError('Failed to load vehicle data');
+      }
       setLoading(false);
     };
     load();
