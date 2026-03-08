@@ -28,19 +28,9 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
 
-  const totalCost = logs?.reduce((sum, l) => sum + (l.total_cost || 0), 0) ?? 0;
-  const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
-
-  const sortedWithOdo = (logs || []).filter(l => l.odometer_at_fill).sort((a, b) => (a.odometer_at_fill || 0) - (b.odometer_at_fill || 0));
-  let avgKmPerL = 0;
-  if (sortedWithOdo.length >= 2) {
-    let totalKm = 0, totalL = 0;
-    for (let i = 1; i < sortedWithOdo.length; i++) {
-      totalKm += (sortedWithOdo[i].odometer_at_fill || 0) - (sortedWithOdo[i - 1].odometer_at_fill || 0);
-      totalL += sortedWithOdo[i].liters;
-    }
-    if (totalL > 0) avgKmPerL = totalKm / totalL;
-  }
+  const avgKmPerL = calcKmPerLiter(logs || []);
+  const lPer100 = calcLitersPer100km(logs || []);
+  const costPerKm = calcCostPerKm(logs || []);
 
   const openAdd = () => { setEditingId(null); setForm(emptyForm()); setOpen(true); };
 
