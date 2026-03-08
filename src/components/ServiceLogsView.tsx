@@ -143,6 +143,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: '',
         notes: r.notes || (r.parts?.length > 1 ? `Parts: ${r.parts.map((p: any) => p.name).join(', ')}` : ''),
         service_category: r.category || 'routine',
+        brand_used: firstPart?.brand || '',
       });
     } else {
       // Part scan → fill from part identification
