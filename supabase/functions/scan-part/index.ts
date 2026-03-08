@@ -92,9 +92,7 @@ Always return valid JSON.`;
                 },
                 {
                   type: "text",
-                  text: scan_type === "bill"
-                    ? "Extract all billing data from this service bill/receipt/invoice image."
-                    : "Identify this vehicle part and assess its condition.",
+                  text: userText,
                 },
               ],
             },
