@@ -100,7 +100,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
         <div>
           <h2 className="text-xl font-bold text-foreground">Modifications</h2>
           {mods && mods.length > 0 && (
-            <p className="text-xs text-muted-foreground">{mods.length} mods · ${totalCost.toLocaleString()} invested</p>
+            <p className="text-xs text-muted-foreground">{mods.length} mods · Rs. {totalCost.toLocaleString()} invested</p>
           )}
         </div>
         <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
