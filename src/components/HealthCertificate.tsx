@@ -52,12 +52,12 @@ const HealthCertificate = ({ services, currentOdometer, vehicleName }: HealthCer
         <div className="absolute inset-0 overflow-hidden">
           <div className="scan-line absolute inset-0" />
         </div>
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Shield className="h-6 w-6 text-primary" />
-            <div>
-              <h3 className="font-display text-sm font-bold tracking-wider text-primary uppercase">Vehicle Health Certificate</h3>
-              <p className="font-mono text-xs text-muted-foreground">{vehicleName} · {currentOdometer.toLocaleString()} km</p>
+        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Shield className="h-6 w-6 shrink-0 text-primary" />
+            <div className="min-w-0">
+              <h3 className="font-display text-xs sm:text-sm font-bold tracking-wider text-primary uppercase break-words">Vehicle Health Certificate</h3>
+              <p className="font-mono text-xs text-muted-foreground truncate">{vehicleName} · {currentOdometer.toLocaleString()} km</p>
             </div>
           </div>
           {overall !== null && (

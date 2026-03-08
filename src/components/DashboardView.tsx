@@ -126,8 +126,8 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
       <div className="animate-fade-in space-y-6">
         {/* Vehicle Header */}
         <div className="glass-card neon-border overflow-hidden">
-          <div className="flex items-stretch">
-            <div className="relative h-40 w-40 shrink-0 bg-secondary/50 group">
+          <div className="flex flex-col sm:flex-row items-stretch">
+            <div className="relative h-32 sm:h-40 w-full sm:w-40 shrink-0 bg-secondary/50 group">
               {vehicle.image_url ? (
                 <img src={vehicle.image_url} alt={vehicle.make} className="h-full w-full object-cover" />
               ) : (
@@ -141,13 +141,13 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
               </button>
               <input ref={photoRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
             </div>
-            <div className="flex flex-1 items-center justify-between p-6">
+            <div className="flex flex-1 flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 gap-3">
               <div>
                 {vehicle.nickname && <p className="mb-1 font-display text-xs font-bold tracking-wider text-primary uppercase">{vehicle.nickname}</p>}
                 <h2 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h2>
                 <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''}</p>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 self-end sm:self-auto">
                 <div className="text-right">
                   <div className="font-mono text-3xl font-bold text-primary">{Number(vehicle.current_odometer).toLocaleString()}</div>
                   <div className="font-display text-xs tracking-wider text-muted-foreground uppercase">kilometers</div>
@@ -207,7 +207,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
           <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
           <StatCard icon={TrendingUp} label="Service + Mods" value={`Rs. ${totalSpent.toLocaleString()}`} />
