@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Gauge, Wrench, AlertTriangle, TrendingUp, Car, Pencil, Camera, Activity, DollarSign } from 'lucide-react';
+import { getCategoryIcon } from '@/lib/vehicleCategories';
 import { calcCostPerKm } from '@/lib/fuelCalcs';
 import { Vehicle, useUpdateVehicle } from '@/hooks/useVehicles';
 import { useServiceLogs } from '@/hooks/useServiceLogs';
