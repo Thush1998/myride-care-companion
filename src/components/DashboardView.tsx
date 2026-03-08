@@ -147,7 +147,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <h2 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h2>
                 <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''}</p>
               </div>
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 self-end sm:self-auto">
                 <div className="text-right">
                   <div className="font-mono text-3xl font-bold text-primary">{Number(vehicle.current_odometer).toLocaleString()}</div>
                   <div className="font-display text-xs tracking-wider text-muted-foreground uppercase">kilometers</div>
