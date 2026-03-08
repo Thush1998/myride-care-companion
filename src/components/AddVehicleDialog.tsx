@@ -144,10 +144,8 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
   const resetForm = () => {
     setStep(0);
     setMake(''); setModel(''); setYear(''); setPlateNo(''); setColor(''); setNickname('');
-    setImageFile(null); setImagePreview(null); setOdometer('');
-    const compInit: Record<string, ComponentEntry> = {};
-    TRACKED_COMPONENTS.forEach(c => { compInit[c.key] = { lastMileage: '', status: 'unknown' }; });
-    setComponents(compInit);
+    setImageFile(null); setImagePreview(null); setOdometer(''); setCategory('car');
+    setComponents({});
     const inspInit: Record<string, boolean> = {};
     INSPECTION_ITEMS.forEach(i => { inspInit[i.key] = false; });
     setInspections(inspInit);
