@@ -6,6 +6,8 @@ import AddVehicleDialog from '@/components/AddVehicleDialog';
 import DashboardView from '@/components/DashboardView';
 import ServiceLogsView from '@/components/ServiceLogsView';
 import TripsView from '@/components/TripsView';
+import FuelLogView from '@/components/FuelLogView';
+import DocumentsView from '@/components/DocumentsView';
 import AuthPage from '@/pages/AuthPage';
 import { Car } from 'lucide-react';
 
@@ -69,6 +71,8 @@ const Index = () => {
           <>
             {activeTab === 'dashboard' && <DashboardView vehicle={selectedVehicle} />}
             {activeTab === 'services' && <ServiceLogsView vehicle={selectedVehicle} />}
+            {activeTab === 'fuel' && <FuelLogView vehicle={selectedVehicle} />}
+            {activeTab === 'documents' && <DocumentsView vehicle={selectedVehicle} />}
             {activeTab === 'trips' && <TripsView vehicle={selectedVehicle} />}
           </>
         )}
