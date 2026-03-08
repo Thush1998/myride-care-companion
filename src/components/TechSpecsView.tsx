@@ -20,7 +20,7 @@ const IDENTITY_FIELDS: FieldDef[] = [
   { key: 'tire_pressure_psi', label: 'Tire Pressure (PSI)', placeholder: 'e.g. 32', type: 'number' },
 ];
 
-const FLUID_FIELDS = [
+const FLUID_FIELDS: FieldDef[] = [
   { key: 'engine_oil_capacity', label: 'Engine Oil Capacity', placeholder: 'e.g. 7.5L' },
   { key: 'coolant_capacity', label: 'Coolant Capacity', placeholder: 'e.g. 10L' },
   { key: 'gear_oil_capacity', label: 'Gear Oil Capacity', placeholder: 'e.g. 3.5L' },
