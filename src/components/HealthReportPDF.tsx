@@ -39,7 +39,7 @@ const generateReport = ({ vehicleName, plateNo, odometer, services }: HealthRepo
       <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${format(new Date(s.service_date), 'yyyy-MM-dd')}</td>
       <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${s.part_name}</td>
       <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a">${s.location_shop || '—'}</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:right">$${s.price || 0}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:right">Rs. ${s.price || 0}</td>
       <td style="padding:6px 10px;border-bottom:1px solid #1a2a3a;text-align:right">${s.odometer_at_service?.toLocaleString() || '—'} km</td>
     </tr>`
   ).join('');
