@@ -157,6 +157,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: '',
         notes: `Condition: ${r.condition || 'unknown'}. ${r.recommended_action || ''} ${r.notes || ''}`.trim(),
         service_category: r.category || 'routine',
+        brand_used: r.brand || '',
       });
     }
 
