@@ -16,11 +16,13 @@ export type Document = {
   updated_at: string;
 };
 
+const db = supabase as any;
+
 export const useDocuments = (vehicleId: string | null) => {
   return useQuery({
     queryKey: ['documents', vehicleId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('documents')
         .select('*')
         .eq('vehicle_id', vehicleId!)
@@ -46,7 +48,7 @@ export const useAddDocument = () => {
       issue_date?: string;
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('documents')
         .insert({ ...doc, user_id: user!.id })
         .select()
@@ -54,7 +56,7 @@ export const useAddDocument = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['documents', vars.vehicle_id] }),
+    onSuccess: (_: any, vars: any) => qc.invalidateQueries({ queryKey: ['documents', vars.vehicle_id] }),
   });
 };
 
@@ -62,17 +64,16 @@ export const useDeleteDocument = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, vehicleId, fileUrl }: { id: string; vehicleId: string; fileUrl?: string | null }) => {
-      // Delete file from storage if exists
       if (fileUrl) {
         const path = fileUrl.split('/vehicle-documents/')[1];
         if (path) {
           await supabase.storage.from('vehicle-documents').remove([path]);
         }
       }
-      const { error } = await supabase.from('documents').delete().eq('id', id);
+      const { error } = await db.from('documents').delete().eq('id', id);
       if (error) throw error;
       return vehicleId;
     },
-    onSuccess: (vehicleId) => qc.invalidateQueries({ queryKey: ['documents', vehicleId] }),
+    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['documents', vehicleId] }),
   });
 };

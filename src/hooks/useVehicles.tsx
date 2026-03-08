@@ -42,7 +42,7 @@ export const useAddVehicle = () => {
     mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string }) => {
       const { data, error } = await supabase
         .from('vehicles')
-        .insert({ ...vehicle, user_id: user!.id })
+        .insert({ ...vehicle, user_id: user!.id } as any)
         .select()
         .single();
       if (error) throw error;
@@ -55,10 +55,10 @@ export const useAddVehicle = () => {
 export const useUpdateVehicle = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; nickname?: string; image_url?: string; color?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; make?: string; model?: string; year?: number; plate_no?: string; nickname?: string; image_url?: string; color?: string }) => {
       const { error } = await supabase
         .from('vehicles')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id);
       if (error) throw error;
     },

@@ -62,6 +62,23 @@ export const useAddServiceLog = () => {
   });
 };
 
+export const useUpdateServiceLog = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, vehicleId, ...updates }: {
+      id: string; vehicleId: string;
+      part_name?: string; part_number?: string | null; location_shop?: string | null;
+      price?: number | null; service_date?: string; odometer_at_service?: number | null;
+      replacement_interval_km?: number | null; notes?: string | null;
+    }) => {
+      const { error } = await supabase.from('service_logs').update(updates).eq('id', id);
+      if (error) throw error;
+      return vehicleId;
+    },
+    onSuccess: (vehicleId) => qc.invalidateQueries({ queryKey: ['service_logs', vehicleId] }),
+  });
+};
+
 export const useDeleteServiceLog = () => {
   const qc = useQueryClient();
   return useMutation({

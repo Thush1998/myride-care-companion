@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useServiceLogs, useAddServiceLog, useDeleteServiceLog } from '@/hooks/useServiceLogs';
+import { useServiceLogs, useAddServiceLog, useUpdateServiceLog, useDeleteServiceLog, ServiceLog } from '@/hooks/useServiceLogs';
 import { Vehicle } from '@/hooks/useVehicles';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -13,78 +13,107 @@ interface ServiceLogsViewProps {
   vehicle: Vehicle;
 }
 
+const emptyForm = () => ({
+  part_name: '', part_number: '', location_shop: '', price: '',
+  service_date: new Date().toISOString().split('T')[0],
+  odometer_at_service: '', replacement_interval_km: '', notes: '',
+});
+
 const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
   const { data: logs, isLoading } = useServiceLogs(vehicle.id);
   const addLog = useAddServiceLog();
+  const updateLog = useUpdateServiceLog();
   const deleteLog = useDeleteServiceLog();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm());
 
-  const [form, setForm] = useState({
-    part_name: '', part_number: '', location_shop: '', price: '',
-    service_date: new Date().toISOString().split('T')[0],
-    odometer_at_service: '', replacement_interval_km: '', notes: '',
-  });
+  const openAdd = () => { setEditingId(null); setForm(emptyForm()); setOpen(true); };
+
+  const openEdit = (log: ServiceLog) => {
+    setEditingId(log.id);
+    setForm({
+      part_name: log.part_name, part_number: log.part_number || '', location_shop: log.location_shop || '',
+      price: log.price != null ? String(log.price) : '', service_date: log.service_date,
+      odometer_at_service: log.odometer_at_service != null ? String(log.odometer_at_service) : '',
+      replacement_interval_km: log.replacement_interval_km != null ? String(log.replacement_interval_km) : '',
+      notes: log.notes || '',
+    });
+    setOpen(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.part_name.trim()) { toast.error('Part name is required'); return; }
     try {
-      await addLog.mutateAsync({
-        vehicle_id: vehicle.id,
-        part_name: form.part_name.trim(),
-        part_number: form.part_number.trim() || undefined,
-        location_shop: form.location_shop.trim() || undefined,
-        price: form.price ? parseFloat(form.price) : undefined,
-        service_date: form.service_date,
-        odometer_at_service: form.odometer_at_service ? parseFloat(form.odometer_at_service) : undefined,
-        replacement_interval_km: form.replacement_interval_km ? parseFloat(form.replacement_interval_km) : undefined,
-        notes: form.notes.trim() || undefined,
-      });
-      toast.success('Service log added!');
+      if (editingId) {
+        await updateLog.mutateAsync({
+          id: editingId, vehicleId: vehicle.id,
+          part_name: form.part_name.trim(),
+          part_number: form.part_number.trim() || null,
+          location_shop: form.location_shop.trim() || null,
+          price: form.price ? parseFloat(form.price) : null,
+          service_date: form.service_date,
+          odometer_at_service: form.odometer_at_service ? parseFloat(form.odometer_at_service) : null,
+          replacement_interval_km: form.replacement_interval_km ? parseFloat(form.replacement_interval_km) : null,
+          notes: form.notes.trim() || null,
+        });
+        toast.success('Service log updated!');
+      } else {
+        await addLog.mutateAsync({
+          vehicle_id: vehicle.id,
+          part_name: form.part_name.trim(),
+          part_number: form.part_number.trim() || undefined,
+          location_shop: form.location_shop.trim() || undefined,
+          price: form.price ? parseFloat(form.price) : undefined,
+          service_date: form.service_date,
+          odometer_at_service: form.odometer_at_service ? parseFloat(form.odometer_at_service) : undefined,
+          replacement_interval_km: form.replacement_interval_km ? parseFloat(form.replacement_interval_km) : undefined,
+          notes: form.notes.trim() || undefined,
+        });
+        toast.success('Service log added!');
+      }
       setOpen(false);
-      setForm({ part_name: '', part_number: '', location_shop: '', price: '', service_date: new Date().toISOString().split('T')[0], odometer_at_service: '', replacement_interval_km: '', notes: '' });
-    } catch { toast.error('Failed to add service log'); }
+      setForm(emptyForm());
+      setEditingId(null);
+    } catch { toast.error('Failed to save service log'); }
   };
 
   return (
     <div className="animate-fade-in space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Service Logs</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 gradient-amber text-primary-foreground font-semibold">
-              <Plus className="h-4 w-4" /> Add Service
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">New Service Record</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-muted-foreground">Part Name *</Label><Input value={form.part_name} onChange={(e) => setForm(f => ({...f, part_name: e.target.value}))} placeholder="Oil Filter" className="bg-input border-border" /></div>
-                <div><Label className="text-muted-foreground">Part Number</Label><Input value={form.part_number} onChange={(e) => setForm(f => ({...f, part_number: e.target.value}))} placeholder="OEM-12345" className="bg-input border-border" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-muted-foreground">Shop / Location</Label><Input value={form.location_shop} onChange={(e) => setForm(f => ({...f, location_shop: e.target.value}))} placeholder="AutoZone" className="bg-input border-border" /></div>
-                <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={(e) => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
-                <div><Label className="text-muted-foreground">Odometer at Service</Label><Input type="number" value={form.odometer_at_service} onChange={(e) => setForm(f => ({...f, odometer_at_service: e.target.value}))} placeholder="50000" className="bg-input border-border" /></div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Replacement Interval (km)</Label>
-                <Input type="number" value={form.replacement_interval_km} onChange={(e) => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" />
-              </div>
-              <div><Label className="text-muted-foreground">Notes</Label><Input value={form.notes} onChange={(e) => setForm(f => ({...f, notes: e.target.value}))} placeholder="Synthetic oil change" className="bg-input border-border" /></div>
-              <Button type="submit" disabled={addLog.isPending} className="w-full gradient-amber text-primary-foreground font-semibold">
-                {addLog.isPending ? 'Adding...' : 'Add Service Record'}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+          <Plus className="h-4 w-4" /> Add Service
+        </Button>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">{editingId ? 'Edit Service Record' : 'New Service Record'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Part Name *</Label><Input value={form.part_name} onChange={(e) => setForm(f => ({...f, part_name: e.target.value}))} placeholder="Oil Filter" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Part Number</Label><Input value={form.part_number} onChange={(e) => setForm(f => ({...f, part_number: e.target.value}))} placeholder="OEM-12345" className="bg-input border-border" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Shop / Location</Label><Input value={form.location_shop} onChange={(e) => setForm(f => ({...f, location_shop: e.target.value}))} placeholder="AutoZone" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={(e) => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={(e) => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Odometer at Service</Label><Input type="number" value={form.odometer_at_service} onChange={(e) => setForm(f => ({...f, odometer_at_service: e.target.value}))} placeholder="50000" className="bg-input border-border" /></div>
+            </div>
+            <div><Label className="text-muted-foreground">Replacement Interval (km)</Label><Input type="number" value={form.replacement_interval_km} onChange={(e) => setForm(f => ({...f, replacement_interval_km: e.target.value}))} placeholder="5000" className="bg-input border-border" /></div>
+            <div><Label className="text-muted-foreground">Notes</Label><Input value={form.notes} onChange={(e) => setForm(f => ({...f, notes: e.target.value}))} placeholder="Synthetic oil change" className="bg-input border-border" /></div>
+            <Button type="submit" disabled={addLog.isPending || updateLog.isPending} className="w-full gradient-amber text-primary-foreground font-semibold">
+              {editingId ? (updateLog.isPending ? 'Saving...' : 'Save Changes') : (addLog.isPending ? 'Adding...' : 'Add Service Record')}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {isLoading ? (
         <p className="text-muted-foreground">Loading...</p>
@@ -110,12 +139,14 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                 </div>
                 {log.notes && <p className="mt-1 text-xs text-muted-foreground/70">{log.notes}</p>}
               </div>
-              <button
-                onClick={() => deleteLog.mutate({ id: log.id, vehicleId: vehicle.id })}
-                className="ml-3 shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="ml-3 flex shrink-0 gap-1">
+                <button onClick={() => openEdit(log)} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button onClick={() => deleteLog.mutate({ id: log.id, vehicleId: vehicle.id })} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
