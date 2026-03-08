@@ -79,8 +79,6 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
       if (payload.odometer_at_fill && payload.odometer_at_fill > vehicle.current_odometer) {
         await updateOdometer.mutateAsync({ id: vehicle.id, odometer: payload.odometer_at_fill });
       }
-      // Invalidate dashboard-related queries so stats refresh
-      const { queryClient } = await import('@tanstack/react-query').then(() => ({ queryClient: null }));
       setOpen(false); setForm(emptyForm()); setEditingId(null);
     } catch { toast.error('Failed to save fuel log'); }
   };
