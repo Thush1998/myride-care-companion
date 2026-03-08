@@ -160,6 +160,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
     const inspInit: Record<string, boolean> = {};
     INSPECTION_ITEMS.forEach(i => { inspInit[i.key] = false; });
     setInspections(inspInit);
+    setAiFindings(null); setAiPhotoPreview(null); setAiScanning(false);
   };
 
   const handleSubmit = async () => {
