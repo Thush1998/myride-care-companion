@@ -33,16 +33,29 @@ const CATEGORY_PARTS: Record<VehicleCategory, string[]> = {
   van: ['engine oil', 'gear oil', 'coolant', 'tire', 'brake pad', 'air filter', 'timing belt'],
 };
 
-export function getTrackedParts(category: VehicleCategory): TrackedPart[] {
-  return CATEGORY_PARTS[category].map(k => ALL_PARTS[k]);
+export function getTrackedParts(category: VehicleCategory | string): TrackedPart[] {
+  const key = normalizeCategory(category);
+  return (CATEGORY_PARTS[key] || CATEGORY_PARTS['car']).map(k => ALL_PARTS[k]);
 }
 
-export function getCategoryIcon(category: VehicleCategory): string {
-  return VEHICLE_CATEGORIES.find(c => c.value === category)?.icon ?? '🚗';
+function normalizeCategory(category: string | undefined | null): VehicleCategory {
+  if (!category) return 'car';
+  const lower = category.toLowerCase();
+  if (lower === 'car' || lower === 'suv/car' || lower === 'suv' || lower.includes('car')) return 'car';
+  if (lower === 'motorcycle' || lower.includes('bike') || lower.includes('motor')) return 'motorcycle';
+  if (lower === 'three_wheeler' || lower.includes('three') || lower.includes('wheeler') || lower.includes('tuk')) return 'three_wheeler';
+  if (lower === 'van' || lower.includes('van')) return 'van';
+  return 'car';
 }
 
-export function getCategoryLabel(category: VehicleCategory): string {
-  return VEHICLE_CATEGORIES.find(c => c.value === category)?.label ?? 'Car / SUV';
+export function getCategoryIcon(category: VehicleCategory | string): string {
+  const key = normalizeCategory(category);
+  return VEHICLE_CATEGORIES.find(c => c.value === key)?.icon ?? '🚗';
+}
+
+export function getCategoryLabel(category: VehicleCategory | string): string {
+  const key = normalizeCategory(category);
+  return VEHICLE_CATEGORIES.find(c => c.value === key)?.label ?? 'Car / SUV';
 }
 
 // Health certificate system mapping per category
