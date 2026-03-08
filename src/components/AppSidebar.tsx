@@ -42,7 +42,7 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
   };
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
+    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
         <img src={driveDocLogo} alt="DriveDoc" className="h-9 w-9 rounded-lg glow-cyan" />
