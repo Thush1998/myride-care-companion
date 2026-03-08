@@ -68,12 +68,9 @@ const VehicleHistory = () => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const res = await fetch(
-          `${supabaseUrl}/functions/v1/public-vehicle?id=${vehicleId}`,
-          { headers: { 'apikey': anonKey, 'Content-Type': 'application/json' } }
-        );
+        const backendUrl = import.meta.env.VITE_SUPABASE_URL || 'https://vpgebrgwuneqgrprhoxg.supabase.co';
+        const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
+        const res = await fetch(endpoint);
         if (!res.ok) { setError('Vehicle not found'); setLoading(false); return; }
         const data = await res.json();
         setVehicle(data.vehicle);
