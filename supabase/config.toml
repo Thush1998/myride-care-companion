@@ -1,1 +1,4 @@
 project_id = "vpgebrgwuneqgrprhoxg"
+
+[functions.public-vehicle]
+verify_jwt = false
