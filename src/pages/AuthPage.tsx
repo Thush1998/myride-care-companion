@@ -1,13 +1,18 @@
 import { Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { lovable } from '@/integrations/lovable';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import autoDocLogo from '@/assets/autodoc-logo.png';
 
 const AuthPage = () => {
   const handleGoogleLogin = async () => {
-    const result = await lovable.auth.signInWithOAuth('google');
-    if (result.error) {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) {
       toast.error('Login failed. Please try again.');
     }
   };
