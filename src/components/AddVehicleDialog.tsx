@@ -69,6 +69,12 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
     return init;
   });
 
+  // AI Inspection
+  const [aiScanning, setAiScanning] = useState(false);
+  const [aiFindings, setAiFindings] = useState<any>(null);
+  const [aiPhotoPreview, setAiPhotoPreview] = useState<string | null>(null);
+  const aiPhotoRef = useRef<HTMLInputElement>(null);
+
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
