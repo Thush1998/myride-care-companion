@@ -174,7 +174,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
 
         {/* Update Odometer Dialog */}
         <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
-          <DialogContent className="bg-card border-border max-w-sm">
+          <DialogContent className="bg-card border-border max-w-sm" aria-describedby={undefined}>
             <DialogHeader><DialogTitle className="font-display text-primary">Update Odometer</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">Current reading: <span className="font-mono font-semibold text-foreground">{Number(vehicle.current_odometer).toLocaleString()} km</span></p>
