@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Fuel, Plus, Trash2, TrendingDown, Pencil } from 'lucide-react';
+import { Fuel, Plus, Trash2, TrendingDown, Pencil, Gauge } from 'lucide-react';
+import { calcKmPerLiter, calcLitersPer100km, calcCostPerKm } from '@/lib/fuelCalcs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,19 +29,10 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
 
-  const totalCost = logs?.reduce((sum, l) => sum + (l.total_cost || 0), 0) ?? 0;
   const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
-
-  const sortedWithOdo = (logs || []).filter(l => l.odometer_at_fill).sort((a, b) => (a.odometer_at_fill || 0) - (b.odometer_at_fill || 0));
-  let avgKmPerL = 0;
-  if (sortedWithOdo.length >= 2) {
-    let totalKm = 0, totalL = 0;
-    for (let i = 1; i < sortedWithOdo.length; i++) {
-      totalKm += (sortedWithOdo[i].odometer_at_fill || 0) - (sortedWithOdo[i - 1].odometer_at_fill || 0);
-      totalL += sortedWithOdo[i].liters;
-    }
-    if (totalL > 0) avgKmPerL = totalKm / totalL;
-  }
+  const avgKmPerL = calcKmPerLiter(logs || []);
+  const lPer100 = calcLitersPer100km(logs || []);
+  const costPerKm = calcCostPerKm(logs || []);
 
   const openAdd = () => { setEditingId(null); setForm(emptyForm()); setOpen(true); };
 
@@ -138,18 +130,22 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
       </Dialog>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Fuel className="h-5 w-5 text-primary" /></div>
           <div><div className="text-xs text-muted-foreground">Total Fuel</div><div className="font-mono text-lg font-semibold text-foreground">{totalLiters.toFixed(1)} L</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><TrendingDown className="h-5 w-5 text-primary" /></div>
-          <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div></div>
+          <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL != null ? `${avgKmPerL.toFixed(1)} km/L` : 'N/A'}</div></div>
+        </div>
+        <div className="glass-card flex items-center gap-4 p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Gauge className="h-5 w-5 text-primary" /></div>
+          <div><div className="text-xs text-muted-foreground">L / 100 km</div><div className="font-mono text-lg font-semibold text-foreground">{lPer100 != null ? lPer100.toFixed(1) : 'N/A'}</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-sm font-bold text-destructive">Rs.</span></div>
-          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">Rs. {totalCost.toLocaleString()}</div></div>
+          <div><div className="text-xs text-muted-foreground">Cost/km</div><div className="font-mono text-lg font-semibold text-foreground">{costPerKm != null ? `Rs. ${costPerKm.toFixed(2)}` : 'N/A'}</div></div>
         </div>
       </div>
 

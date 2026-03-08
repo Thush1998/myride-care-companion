@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Gauge, Wrench, AlertTriangle, TrendingUp, Car, Pencil, Camera, Activity, DollarSign } from 'lucide-react';
+import { calcCostPerKm } from '@/lib/fuelCalcs';
 import { Vehicle, useUpdateVehicle } from '@/hooks/useVehicles';
 import { useServiceLogs } from '@/hooks/useServiceLogs';
 import { useTrips } from '@/hooks/useTrips';
@@ -50,7 +51,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     + (mods?.reduce((sum, m) => sum + (m.cost || 0), 0) ?? 0);
   const fuelSpent = fuelLogs?.reduce((sum, f) => sum + (f.total_cost || 0), 0) ?? 0;
   const grandTotal = totalSpent + fuelSpent;
-  const cpk = vehicle.current_odometer > 0 ? (grandTotal / vehicle.current_odometer).toFixed(2) : '0.00';
+  // Trip-based cost/km using last 5 fuel entries
+  const fuelCpk = calcCostPerKm(fuelLogs || [], 5);
+  const cpkDisplay = fuelCpk != null ? `Rs. ${fuelCpk.toFixed(2)}` : 'N/A';
 
   const warnings = (services || []).filter((s) => {
     if (!s.replacement_interval_km || !s.odometer_at_service) return false;
@@ -212,7 +215,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
           <StatCard icon={TrendingUp} label="Service + Mods" value={`Rs. ${totalSpent.toLocaleString()}`} />
           <StatCard icon={Activity} label="Fuel Spent" value={`Rs. ${fuelSpent.toLocaleString()}`} />
-          <StatCard icon={DollarSign} label="Cost/km" value={`Rs. ${cpk}`} highlight />
+          <StatCard icon={DollarSign} label="Cost/km" value={cpkDisplay} highlight />
         </div>
 
         {/* OBD Charts */}
