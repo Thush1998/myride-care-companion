@@ -154,7 +154,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
               <div>
                 {vehicle.nickname && <p className="mb-1 font-display text-xs font-bold tracking-wider text-primary uppercase">{vehicle.nickname}</p>}
                 <h2 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h2>
-                <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''}</p>
+                <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''} · {getCategoryLabel(vehicle.category)}</p>
               </div>
               <div className="flex items-start gap-3 self-end sm:self-auto">
                 <div className="text-right">
