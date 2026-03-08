@@ -148,8 +148,8 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
           <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-lg font-bold text-destructive">$</span></div>
-          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">${totalCost.toLocaleString()}</div></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-sm font-bold text-destructive">Rs.</span></div>
+          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">Rs. {totalCost.toLocaleString()}</div></div>
         </div>
       </div>
 
@@ -173,8 +173,8 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span>{format(new Date(log.fuel_date), 'MMM d, yyyy')}</span>
                   {log.station && <span>⛽ {log.station}</span>}
-                  {log.total_cost != null && <span className="font-mono text-primary">${log.total_cost}</span>}
-                  {log.price_per_liter != null && <span className="font-mono">${log.price_per_liter}/L</span>}
+                  {log.total_cost != null && <span className="font-mono text-primary">Rs. {log.total_cost}</span>}
+                  {log.price_per_liter != null && <span className="font-mono">Rs. {log.price_per_liter}/L</span>}
                   {log.odometer_at_fill != null && <span>{log.odometer_at_fill.toLocaleString()} km</span>}
                 </div>
               </div>

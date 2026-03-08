@@ -100,7 +100,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
         <div>
           <h2 className="text-xl font-bold text-foreground">Modifications</h2>
           {mods && mods.length > 0 && (
-            <p className="text-xs text-muted-foreground">{mods.length} mods · ${totalCost.toLocaleString()} invested</p>
+            <p className="text-xs text-muted-foreground">{mods.length} mods · Rs. {totalCost.toLocaleString()} invested</p>
           )}
         </div>
         <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
@@ -124,7 +124,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.mod_date} onChange={e => setForm(f => ({ ...f, mod_date: e.target.value }))} className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Cost ($)</Label><Input type="number" step="0.01" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="350" className="bg-input border-border font-mono" /></div>
+              <div><Label className="text-muted-foreground">Cost (Rs.)</Label><Input type="number" step="0.01" value={form.cost} onChange={e => setForm(f => ({ ...f, cost: e.target.value }))} placeholder="350" className="bg-input border-border font-mono" /></div>
             </div>
             <div>
               <Label className="text-muted-foreground">Wiring Notes / Technical Details</Label>
@@ -172,7 +172,7 @@ const ModificationsView = ({ vehicle }: ModificationsViewProps) => {
                     {mod.description && <p className="mt-0.5 text-xs text-muted-foreground">{mod.description}</p>}
                     <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span>{format(new Date(mod.mod_date), 'MMM d, yyyy')}</span>
-                      {mod.cost != null && <span className="font-mono text-primary">${mod.cost}</span>}
+                      {mod.cost != null && <span className="font-mono text-primary">Rs. {mod.cost}</span>}
                     </div>
                     {mod.wiring_notes && (
                       <p className="mt-1.5 rounded bg-secondary/50 p-2 font-mono text-xs text-muted-foreground">

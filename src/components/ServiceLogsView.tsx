@@ -259,14 +259,14 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                       <div className="flex justify-between"><span className="text-muted-foreground">Date</span><span className="text-foreground">{scanResult.result.date}</span></div>
                     )}
                     {scanResult.result.total_amount != null && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-primary font-bold">${scanResult.result.total_amount}</span></div>
+                      <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="text-primary font-bold">Rs. {scanResult.result.total_amount}</span></div>
                     )}
                     {scanResult.result.parts?.length > 0 && (
                       <div>
                         <span className="text-muted-foreground">Parts:</span>
                         <ul className="mt-1 space-y-1 pl-3">
                           {scanResult.result.parts.map((p: any, i: number) => (
-                            <li key={i} className="text-foreground">• {p.name}{p.price != null ? ` ($${p.price})` : ''}</li>
+                            <li key={i} className="text-foreground">• {p.name}{p.price != null ? ` (Rs. ${p.price})` : ''}</li>
                           ))}
                         </ul>
                       </div>
@@ -338,7 +338,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Shop / Location</Label><Input value={form.location_shop} onChange={e => setForm(f => ({...f, location_shop: e.target.value}))} placeholder="AutoZone" className="bg-input border-border" /></div>
-              <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Price (Rs.)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.service_date} onChange={e => setForm(f => ({...f, service_date: e.target.value}))} className="bg-input border-border" /></div>
@@ -380,7 +380,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground">
                   <span>{format(new Date(log.service_date), 'MMM d, yyyy')}</span>
                   {log.location_shop && <span>📍 {log.location_shop}</span>}
-                  {log.price != null && <span className="text-primary font-bold">${log.price}</span>}
+                  {log.price != null && <span className="text-primary font-bold">Rs. {log.price}</span>}
                   {log.odometer_at_service != null && <span>{log.odometer_at_service.toLocaleString()} km</span>}
                   {log.replacement_interval_km != null && <span>🔄 every {log.replacement_interval_km.toLocaleString()} km</span>}
                 </div>

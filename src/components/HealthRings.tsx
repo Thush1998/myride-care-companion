@@ -82,7 +82,7 @@ const CircularRing = ({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Price Paid</span>
-                <span className="text-primary font-bold">{lastPrice != null ? `$${lastPrice}` : '—'}</span>
+                <span className="text-primary font-bold">{lastPrice != null ? `Rs. ${lastPrice}` : '—'}</span>
               </div>
               {brand && (
                 <div className="flex justify-between">

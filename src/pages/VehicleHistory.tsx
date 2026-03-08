@@ -54,7 +54,7 @@ const VehicleHistory = () => {
           </div>
           <div className="glass-card p-3 text-center">
             <DollarSign className="mx-auto h-5 w-5 text-primary mb-1" />
-            <div className="font-mono text-lg font-bold text-foreground">${services.reduce((s, l) => s + (l.price || 0), 0).toLocaleString()}</div>
+            <div className="font-mono text-lg font-bold text-foreground">Rs. {services.reduce((s, l) => s + (l.price || 0), 0).toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Total Spent</div>
           </div>
         </div>
@@ -76,7 +76,7 @@ const VehicleHistory = () => {
                     </div>
                     {s.odometer_at_service && <p className="text-xs text-muted-foreground mt-1">{Number(s.odometer_at_service).toLocaleString()} km</p>}
                   </div>
-                  {s.price != null && <span className="font-mono text-sm font-semibold text-primary">${s.price}</span>}
+                  {s.price != null && <span className="font-mono text-sm font-semibold text-primary">Rs. {s.price}</span>}
                 </div>
               ))}
             </div>
