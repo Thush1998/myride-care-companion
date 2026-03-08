@@ -26,37 +26,53 @@ const CircularRing = ({
 }) => {
   const r = 36;
   const circ = 2 * Math.PI * r;
+  const healthPct = Math.max(0, Math.round(100 - percent));
   const offset = circ - (Math.min(percent, 100) / 100) * circ;
+  const isCritical = healthPct < 20;
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/50 focus:outline-none">
+        <button className={`flex flex-col items-center gap-2 rounded-xl p-2 transition-colors hover:bg-secondary/50 focus:outline-none ${isCritical ? 'animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]' : ''}`}>
           <div className="relative h-24 w-24">
-            <svg viewBox="0 0 80 80" className="h-full w-full -rotate-90">
+            {isCritical && (
+              <div className="absolute inset-0 rounded-full animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_infinite] opacity-20" style={{ background: `radial-gradient(circle, hsl(var(--destructive)), transparent 70%)` }} />
+            )}
+            <svg viewBox="0 0 80 80" className="relative h-full w-full -rotate-90">
               <circle cx="40" cy="40" r={r} fill="none" stroke="hsl(var(--secondary))" strokeWidth="6" />
               <circle
                 cx="40" cy="40" r={r} fill="none"
-                stroke={color}
+                stroke={isCritical ? 'hsl(var(--destructive))' : color}
                 strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={circ}
                 strokeDashoffset={offset}
                 className="transition-all duration-700"
-                style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+                style={{ filter: `drop-shadow(0 0 ${isCritical ? '10px' : '6px'} ${isCritical ? 'hsl(var(--destructive))' : color})` }}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="font-mono text-lg font-bold text-foreground">
-                {Math.max(0, Math.round(100 - percent))}%
+              <span className={`font-mono text-lg font-bold ${isCritical ? 'text-destructive' : 'text-foreground'}`}>
+                {healthPct}%
               </span>
             </div>
           </div>
-          <span className="font-display text-xs font-medium tracking-wider text-muted-foreground uppercase">{label}</span>
+          <span className={`font-display text-xs font-medium tracking-wider uppercase ${isCritical ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>{label}</span>
+          {isCritical && (
+            <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold text-destructive animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]">
+              ⚠ CRITICAL
+            </span>
+          )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bg-card border-border">
+      <PopoverContent className={`w-64 bg-card border-border ${isCritical ? 'border-destructive/50' : ''}`}>
         <div className="space-y-2">
+          {isCritical && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-center">
+              <p className="text-xs font-bold text-destructive">🚨 Critical Service Required</p>
+              <p className="text-[10px] text-destructive/80">This component has exceeded safe service limits</p>
+            </div>
+          )}
           <h4 className="font-display text-xs font-bold tracking-wider text-primary uppercase">{label} Details</h4>
           {hasData ? (
             <div className="space-y-1.5 font-mono text-xs">
