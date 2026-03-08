@@ -27,7 +27,7 @@ const CircularRing = ({
   const r = 36;
   const circ = 2 * Math.PI * r;
   const healthPct = Math.max(0, Math.round(100 - percent));
-  const offset = circ - (Math.min(percent, 100) / 100) * circ;
+  const offset = circ - (Math.min(healthPct, 100) / 100) * circ;
   const isCritical = healthPct < 20;
 
   return (
