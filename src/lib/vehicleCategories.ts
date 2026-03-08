@@ -48,12 +48,14 @@ function normalizeCategory(category: string | undefined | null): VehicleCategory
   return 'car';
 }
 
-export function getCategoryIcon(category: VehicleCategory): string {
-  return VEHICLE_CATEGORIES.find(c => c.value === category)?.icon ?? '🚗';
+export function getCategoryIcon(category: VehicleCategory | string): string {
+  const key = normalizeCategory(category);
+  return VEHICLE_CATEGORIES.find(c => c.value === key)?.icon ?? '🚗';
 }
 
-export function getCategoryLabel(category: VehicleCategory): string {
-  return VEHICLE_CATEGORIES.find(c => c.value === category)?.label ?? 'Car / SUV';
+export function getCategoryLabel(category: VehicleCategory | string): string {
+  const key = normalizeCategory(category);
+  return VEHICLE_CATEGORIES.find(c => c.value === key)?.label ?? 'Car / SUV';
 }
 
 // Health certificate system mapping per category
