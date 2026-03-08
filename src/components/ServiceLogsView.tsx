@@ -56,6 +56,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
       replacement_interval_km: log.replacement_interval_km != null ? String(log.replacement_interval_km) : '',
       notes: log.notes || '',
       service_category: (log as any).service_category || 'routine',
+      brand_used: (log as any).brand_used || '',
     });
     setOpen(true);
   };
