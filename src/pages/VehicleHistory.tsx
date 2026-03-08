@@ -4,6 +4,7 @@ import { Wrench, Calendar, DollarSign, Gauge, Phone, ChevronRight, CalendarClock
 import { format, differenceInDays, addDays } from 'date-fns';
 import driveDocLogo from '@/assets/drivedoc-logo.png';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const TRACKED_PARTS = [
   { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000, timeIntervalDays: 180 },
@@ -68,47 +69,38 @@ const VehicleHistory = () => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
       try {
-        const primaryBackendUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
-        const fallbackBackendUrl = 'https://vpgebrgwuneqgrprhoxg.supabase.co';
-        const backendUrls = [primaryBackendUrl, fallbackBackendUrl].filter(
-          (value, index, arr): value is string => !!value && arr.indexOf(value) === index
-        );
+        console.log('[VehicleHistory] Fetching vehicle with ID:', vehicleId);
 
-        let lastError = 'Failed to load vehicle data';
+        // Direct Supabase client queries — uses anon key, no auth session required
+        const [vRes, sRes, mRes] = await Promise.all([
+          supabase.from('vehicles').select('*').eq('id', vehicleId).maybeSingle(),
+          supabase.from('service_logs').select('*').eq('vehicle_id', vehicleId).order('service_date', { ascending: false }),
+          supabase.from('modifications').select('*').eq('vehicle_id', vehicleId).order('mod_date', { ascending: false }),
+        ]);
 
-        for (const backendUrl of backendUrls) {
-          const endpoint = `${backendUrl}/functions/v1/public-vehicle?id=${encodeURIComponent(vehicleId)}`;
-          const res = await fetch(endpoint);
+        console.log('[VehicleHistory] Vehicle result:', { data: vRes.data, error: vRes.error });
+        console.log('[VehicleHistory] Services count:', sRes.data?.length, 'error:', sRes.error);
+        console.log('[VehicleHistory] Mods count:', mRes.data?.length, 'error:', mRes.error);
 
-          if (res.ok) {
-            const data = await res.json();
-            setVehicle(data.vehicle);
-            setServices(data.services || []);
-            setMods(data.modifications || []);
-            setLoading(false);
-            return;
-          }
-
-          let payload: any = null;
-          try {
-            payload = await res.json();
-          } catch {
-            payload = null;
-          }
-
-          const message = payload?.error || payload?.message || '';
-          lastError = message || (res.status === 404 ? 'Vehicle not found' : 'Failed to load vehicle data');
-
-          const missingFunction = res.status === 404 && message.toLowerCase().includes('function was not found');
-          if (!missingFunction) {
-            setError(lastError);
-            setLoading(false);
-            return;
-          }
+        if (vRes.error) {
+          setError(`Database error: ${vRes.error.message}`);
+          setLoading(false);
+          return;
         }
 
-        setError(lastError);
+        if (!vRes.data) {
+          setError('Vehicle not found');
+          setLoading(false);
+          return;
+        }
+
+        // Strip user_id before setting state
+        const { user_id, ...vehicle } = vRes.data;
+        setVehicle(vehicle);
+        setServices((sRes.data || []).map(({ user_id, ...rest }: any) => rest));
+        setMods((mRes.data || []).map(({ user_id, ...rest }: any) => rest));
       } catch (e) {
+        console.error('[VehicleHistory] Unexpected error:', e);
         setError('Failed to load vehicle data');
       }
       setLoading(false);
