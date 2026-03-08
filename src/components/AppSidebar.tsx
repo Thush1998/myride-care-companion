@@ -3,7 +3,7 @@ import { Vehicle, useDeleteVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import autoDocLogo from '@/assets/autodoc-logo.png';
+import driveDocLogo from '@/assets/drivedoc-logo.png';
 
 interface AppSidebarProps {
   vehicles: Vehicle[];
@@ -45,9 +45,9 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-        <img src={autoDocLogo} alt="AutoDoc" className="h-9 w-9 rounded-lg glow-cyan" />
+        <img src={driveDocLogo} alt="DriveDoc" className="h-9 w-9 rounded-lg glow-cyan" />
         <div>
-          <span className="font-display text-sm font-bold tracking-wider text-primary uppercase">AutoDoc</span>
+          <span className="font-display text-sm font-bold tracking-wider text-primary uppercase">DriveDoc</span>
           <p className="text-xs text-muted-foreground">Vehicle Diagnostics</p>
         </div>
       </div>
