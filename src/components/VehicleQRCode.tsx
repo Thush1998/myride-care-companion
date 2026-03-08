@@ -1,7 +1,9 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { QrCode, Printer } from 'lucide-react';
+import { QrCode, Printer, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface VehicleQRCodeProps {
@@ -12,7 +14,10 @@ interface VehicleQRCodeProps {
 
 const VehicleQRCode = ({ vehicleId, vehicleName, plateNo }: VehicleQRCodeProps) => {
   const printRef = useRef<HTMLDivElement>(null);
-  const url = `${window.location.origin}/history?v=${vehicleId}`;
+  const [phone, setPhone] = useState('');
+  
+  const baseUrl = `${window.location.origin}/history?v=${vehicleId}`;
+  const url = phone.trim() ? `${baseUrl}&phone=${encodeURIComponent(phone.trim())}` : baseUrl;
 
   const handlePrint = () => {
     const content = printRef.current;
@@ -53,6 +58,20 @@ const VehicleQRCode = ({ vehicleId, vehicleName, plateNo }: VehicleQRCodeProps) 
             <p className="text-sm text-muted-foreground">{plateNo}</p>
             <small className="text-xs text-muted-foreground/60">Scan to view service history · AutoDoc</small>
           </div>
+          
+          <div className="w-full space-y-1.5">
+            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <Phone className="h-3 w-3" /> Contact number (optional)
+            </Label>
+            <Input
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="+94 77 123 4567"
+              className="bg-input border-border font-mono text-sm"
+            />
+            <p className="text-[10px] text-muted-foreground/60">Adds a "Contact Owner" button to the public profile.</p>
+          </div>
+
           <p className="text-xs text-center text-muted-foreground">Print and stick inside your engine bay. Anyone who scans it will see this vehicle's full service history.</p>
           <Button onClick={handlePrint} className="w-full gap-2 gradient-cyan text-primary-foreground font-semibold">
             <Printer className="h-4 w-4" /> Print QR Code
