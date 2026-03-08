@@ -14,6 +14,112 @@ export type Database = {
   }
   public: {
     Tables: {
+      documents: {
+        Row: {
+          created_at: string
+          doc_name: string
+          doc_type: string
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          issue_date: string | null
+          notes: string | null
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_name: string
+          doc_type: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_name?: string
+          doc_type?: string
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fuel_logs: {
+        Row: {
+          created_at: string
+          fuel_date: string
+          fuel_type: string | null
+          id: string
+          liters: number
+          notes: string | null
+          odometer_at_fill: number | null
+          price_per_liter: number | null
+          station: string | null
+          total_cost: number | null
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          created_at?: string
+          fuel_date?: string
+          fuel_type?: string | null
+          id?: string
+          liters: number
+          notes?: string | null
+          odometer_at_fill?: number | null
+          price_per_liter?: number | null
+          station?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          created_at?: string
+          fuel_date?: string
+          fuel_type?: string | null
+          id?: string
+          liters?: number
+          notes?: string | null
+          odometer_at_fill?: number | null
+          price_per_liter?: number | null
+          station?: string | null
+          total_cost?: number | null
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fuel_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_logs: {
         Row: {
           created_at: string
@@ -129,6 +235,7 @@ export type Database = {
           image_url: string | null
           make: string
           model: string
+          nickname: string | null
           plate_no: string
           updated_at: string
           user_id: string
@@ -142,6 +249,7 @@ export type Database = {
           image_url?: string | null
           make: string
           model: string
+          nickname?: string | null
           plate_no: string
           updated_at?: string
           user_id: string
@@ -155,6 +263,7 @@ export type Database = {
           image_url?: string | null
           make?: string
           model?: string
+          nickname?: string | null
           plate_no?: string
           updated_at?: string
           user_id?: string
