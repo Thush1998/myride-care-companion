@@ -10,7 +10,7 @@ interface HealthCertificateProps {
 }
 
 const HealthCertificate = ({ services, currentOdometer, vehicleName, category = 'car' }: HealthCertificateProps) => {
-  const SYSTEMS = HEALTH_SYSTEMS[category];
+  const SYSTEMS = HEALTH_SYSTEMS[category as keyof typeof HEALTH_SYSTEMS] || HEALTH_SYSTEMS['car'];
   const systemHealth = SYSTEMS.map(sys => {
     const related = services.filter(s =>
       sys.parts.some(p => s.part_name.toLowerCase().includes(p))

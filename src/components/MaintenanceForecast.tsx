@@ -10,7 +10,7 @@ interface MaintenanceForecastProps {
 }
 
 const MaintenanceForecast = ({ services, currentOdometer, category = 'car' }: MaintenanceForecastProps) => {
-  const TRACKED = FORECAST_TRACKED[category];
+  const TRACKED = FORECAST_TRACKED[category as keyof typeof FORECAST_TRACKED] || FORECAST_TRACKED['car'];
   // Estimate avg daily km
   const allOdos = services
     .filter(s => s.odometer_at_service && s.odometer_at_service > 0)
