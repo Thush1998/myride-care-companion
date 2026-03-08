@@ -107,6 +107,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         id: vehicle.id, make: editForm.make.trim(), model: editForm.model.trim(),
         year: parseInt(editForm.year), plate_no: editForm.plate_no.trim(),
         color: editForm.color.trim() || undefined, nickname: editForm.nickname.trim() || undefined,
+        category: editForm.category,
       });
       toast.success('Vehicle updated!');
       setEditOpen(false);
