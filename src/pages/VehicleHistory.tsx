@@ -54,7 +54,7 @@ const VehicleHistory = () => {
           </div>
           <div className="glass-card p-3 text-center">
             <DollarSign className="mx-auto h-5 w-5 text-primary mb-1" />
-            <div className="font-mono text-lg font-bold text-foreground">${services.reduce((s, l) => s + (l.price || 0), 0).toLocaleString()}</div>
+            <div className="font-mono text-lg font-bold text-foreground">Rs. {services.reduce((s, l) => s + (l.price || 0), 0).toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Total Spent</div>
           </div>
         </div>
