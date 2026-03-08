@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pencil, Save, X, Cpu } from 'lucide-react';
+import { Pencil, Save, X, Cpu, Droplets, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,26 +40,26 @@ const TechSpecsView = ({ vehicle }: TechSpecsViewProps) => {
 
   const startEdit = () => {
     const v = vehicle as any;
-    setForm({
-      chassis_number: v.chassis_number || '',
-      engine_number: v.engine_number || '',
-      paint_code: v.paint_code || '',
-      oil_grade: v.oil_grade || '',
-      tire_pressure_psi: v.tire_pressure_psi != null ? String(v.tire_pressure_psi) : '',
+    const f: Record<string, string> = {};
+    ALL_FIELDS.forEach(field => {
+      f[field.key] = v[field.key] != null ? String(v[field.key]) : '';
     });
+    setForm(f);
     setEditing(true);
   };
 
   const handleSave = async () => {
     try {
-      await updateVehicle.mutateAsync({
-        id: vehicle.id,
-        chassis_number: form.chassis_number.trim() || undefined,
-        engine_number: form.engine_number.trim() || undefined,
-        paint_code: form.paint_code.trim() || undefined,
-        oil_grade: form.oil_grade.trim() || undefined,
-        tire_pressure_psi: form.tire_pressure_psi ? parseFloat(form.tire_pressure_psi) : undefined,
-      } as any);
+      const updates: Record<string, any> = { id: vehicle.id };
+      ALL_FIELDS.forEach(field => {
+        const val = form[field.key]?.trim();
+        if (field.type === 'number') {
+          updates[field.key] = val ? parseFloat(val) : null;
+        } else {
+          updates[field.key] = val || null;
+        }
+      });
+      await updateVehicle.mutateAsync(updates as any);
       toast.success('Technical specs saved!');
       setEditing(false);
     } catch {
@@ -68,6 +68,39 @@ const TechSpecsView = ({ vehicle }: TechSpecsViewProps) => {
   };
 
   const v = vehicle as any;
+
+  const renderFieldGroup = (title: string, icon: React.ReactNode, fields: typeof IDENTITY_FIELDS) => (
+    <div className="glass-card p-5">
+      <div className="mb-4 flex items-center gap-2">
+        {icon}
+        <span className="text-sm font-semibold text-foreground">{title}</span>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {fields.map(f => (
+          <div key={f.key}>
+            <Label className="text-xs text-muted-foreground">{f.label}</Label>
+            {editing ? (
+              <Input
+                value={form[f.key] || ''}
+                onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                placeholder={f.placeholder}
+                className="mt-1 bg-input border-border font-mono"
+                type={f.type === 'number' ? 'number' : 'text'}
+              />
+            ) : (
+              <p className="mt-1 font-mono text-sm text-foreground">
+                {v[f.key] != null && v[f.key] !== '' ? (
+                  f.key === 'tire_pressure_psi' ? `${v[f.key]} PSI` : v[f.key]
+                ) : (
+                  <span className="text-muted-foreground/50">Not set</span>
+                )}
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -89,36 +122,11 @@ const TechSpecsView = ({ vehicle }: TechSpecsViewProps) => {
         )}
       </div>
 
-      <div className="glass-card p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <Cpu className="h-5 w-5 text-primary" />
-          <span className="text-sm font-semibold text-foreground">{vehicle.make} {vehicle.model} — {vehicle.year}</span>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {FIELDS.map(f => (
-            <div key={f.key}>
-              <Label className="text-xs text-muted-foreground">{f.label}</Label>
-              {editing ? (
-                <Input
-                  value={form[f.key] || ''}
-                  onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                  placeholder={f.placeholder}
-                  className="mt-1 bg-input border-border font-mono"
-                  type={f.key === 'tire_pressure_psi' ? 'number' : 'text'}
-                />
-              ) : (
-                <p className="mt-1 font-mono text-sm text-foreground">
-                  {v[f.key] != null && v[f.key] !== '' ? (
-                    f.key === 'tire_pressure_psi' ? `${v[f.key]} PSI` : v[f.key]
-                  ) : (
-                    <span className="text-muted-foreground/50">Not set</span>
-                  )}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="text-xs text-muted-foreground">{vehicle.make} {vehicle.model} — {vehicle.year}</div>
+
+      {renderFieldGroup('Identity & Basics', <Cpu className="h-5 w-5 text-primary" />, IDENTITY_FIELDS)}
+      {renderFieldGroup('Fluid Capacities', <Droplets className="h-5 w-5 text-primary" />, FLUID_FIELDS)}
+      {renderFieldGroup('Torque Specifications', <Wrench className="h-5 w-5 text-primary" />, TORQUE_FIELDS)}
     </div>
   );
 };

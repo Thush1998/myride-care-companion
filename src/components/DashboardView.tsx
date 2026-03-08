@@ -23,6 +23,7 @@ import OBDCharts from './OBDCharts';
 import SystemScan from './SystemScan';
 import SparePartsView from './SparePartsView';
 import HealthReportPDF from './HealthReportPDF';
+import VehicleQRCode from './VehicleQRCode';
 
 interface DashboardViewProps {
   vehicle: Vehicle;
