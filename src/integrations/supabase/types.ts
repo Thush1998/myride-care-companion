@@ -172,6 +172,7 @@ export type Database = {
       }
       service_logs: {
         Row: {
+          brand_used: string | null
           created_at: string
           id: string
           location_shop: string | null
@@ -188,6 +189,7 @@ export type Database = {
           vehicle_id: string
         }
         Insert: {
+          brand_used?: string | null
           created_at?: string
           id?: string
           location_shop?: string | null
@@ -204,6 +206,7 @@ export type Database = {
           vehicle_id: string
         }
         Update: {
+          brand_used?: string | null
           created_at?: string
           id?: string
           location_shop?: string | null
@@ -222,6 +225,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "service_logs_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spare_parts: {
+        Row: {
+          brand: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          part_name: string
+          part_number: string | null
+          quantity: number
+          updated_at: string
+          user_id: string
+          vehicle_id: string
+        }
+        Insert: {
+          brand?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          part_name: string
+          part_number?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id: string
+          vehicle_id: string
+        }
+        Update: {
+          brand?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          part_name?: string
+          part_number?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spare_parts_vehicle_id_fkey"
             columns: ["vehicle_id"]
             isOneToOne: false
             referencedRelation: "vehicles"
