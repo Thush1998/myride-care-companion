@@ -138,7 +138,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <img src={vehicle.image_url} alt={vehicle.make} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Car className="h-16 w-16 text-muted-foreground/30" />
+                  <span className="text-4xl">{getCategoryIcon(vehicle.category)}</span>
+                </div>
+              )}
                 </div>
               )}
               <button onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}
