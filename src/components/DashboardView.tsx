@@ -44,7 +44,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const updateVehicle = useUpdateVehicle();
   const [newOdometer, setNewOdometer] = useState('');
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '' });
+  const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '', category: 'car' as string });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showScan, setShowScan] = useState(true);
   const [odoDialogOpen, setOdoDialogOpen] = useState(false);
