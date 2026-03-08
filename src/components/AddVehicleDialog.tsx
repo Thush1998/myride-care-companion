@@ -7,7 +7,7 @@ import { useAddVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
 
 interface AddVehicleDialogProps {
   open: boolean;
@@ -69,6 +69,12 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
     return init;
   });
 
+  // AI Inspection
+  const [aiScanning, setAiScanning] = useState(false);
+  const [aiFindings, setAiFindings] = useState<any>(null);
+  const [aiPhotoPreview, setAiPhotoPreview] = useState<string | null>(null);
+  const aiPhotoRef = useRef<HTMLInputElement>(null);
+
   const [uploading, setUploading] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,8 +95,57 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
   };
 
   const inspectionScore = () => {
+    if (aiFindings?.overall_health_percent != null) return aiFindings.overall_health_percent;
     const checked = Object.values(inspections).filter(Boolean).length;
     return Math.round((checked / INSPECTION_ITEMS.length) * 100);
+  };
+
+  const handleAiPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      setAiPhotoPreview(dataUrl);
+      const base64 = dataUrl.split(',')[1];
+      setAiScanning(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('scan-part', {
+          body: { image_base64: base64, scan_type: 'inspection' },
+        });
+        if (error) throw error;
+        if (data?.result && !data.result.parse_error) {
+          setAiFindings(data.result);
+          // Auto-check inspection items based on AI findings
+          if (data.result.findings) {
+            const updated = { ...inspections };
+            data.result.findings.forEach((f: any) => {
+              if (f.condition === 'good' || f.condition === 'fair') {
+                // Map AI areas to checklist keys
+                const areaLower = f.area.toLowerCase();
+                if (areaLower.includes('leak') || areaLower.includes('oil')) updated.oil_leaks = f.condition === 'good';
+                if (areaLower.includes('tire')) updated.tire_tread = f.condition === 'good';
+                if (areaLower.includes('smoke') || areaLower.includes('exhaust')) updated.smoke_level = f.condition === 'good';
+                if (areaLower.includes('brake')) updated.brake_feel = f.condition === 'good';
+                if (areaLower.includes('suspension')) updated.suspension = f.condition === 'good';
+                if (areaLower.includes('light')) updated.lights = f.condition === 'good';
+                if (areaLower.includes('fluid')) updated.fluid_levels = f.condition === 'good';
+                if (areaLower.includes('battery')) updated.battery = f.condition === 'good';
+              }
+            });
+            setInspections(updated);
+          }
+          toast.success(`AI Inspection complete: ${data.result.overall_health_percent}% health`);
+        } else {
+          toast.error('Could not analyze the image. Try a clearer photo.');
+        }
+      } catch {
+        toast.error('AI inspection failed. Please try again.');
+      } finally {
+        setAiScanning(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const canProceedStep1 = make.trim() && model.trim() && year && plateNo.trim() && odometer;
@@ -105,6 +160,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
     const inspInit: Record<string, boolean> = {};
     INSPECTION_ITEMS.forEach(i => { inspInit[i.key] = false; });
     setInspections(inspInit);
+    setAiFindings(null); setAiPhotoPreview(null); setAiScanning(false);
   };
 
   const handleSubmit = async () => {
@@ -291,7 +347,74 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
         {/* Step 3: Physical Inspection */}
         {step === 2 && (
           <div className="space-y-4 animate-fade-in">
-            <p className="text-xs text-muted-foreground">Check off items you've physically verified. This calculates the initial health score.</p>
+            <p className="text-xs text-muted-foreground">Check off items manually, or use AI to analyze a photo of the engine bay / dashboard.</p>
+
+            {/* AI Inspection */}
+            <div className="glass-card neon-border p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-display text-xs font-bold tracking-wider text-primary uppercase flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4" /> AI Visual Inspection
+                </h4>
+                {aiFindings && (
+                  <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">Analysis Complete</span>
+                )}
+              </div>
+              <p className="text-[11px] text-muted-foreground">Take a photo of the engine bay, dashboard, or exterior. AI will analyze visible condition and auto-fill the checklist.</p>
+              <div className="flex gap-3">
+                {aiPhotoPreview && (
+                  <img src={aiPhotoPreview} alt="AI scan" className="h-20 w-20 rounded-lg object-cover border border-border" />
+                )}
+                <Button
+                  type="button"
+                  onClick={() => aiPhotoRef.current?.click()}
+                  disabled={aiScanning}
+                  variant="outline"
+                  className="flex-1 gap-2 border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  {aiScanning ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Analyzing...</>
+                  ) : (
+                    <><Camera className="h-4 w-4" /> {aiFindings ? 'Re-scan' : 'Take Photo'}</>
+                  )}
+                </Button>
+                <input ref={aiPhotoRef} type="file" accept="image/*" capture="environment" onChange={handleAiPhoto} className="hidden" />
+              </div>
+
+              {/* AI Findings */}
+              {aiFindings && (
+                <div className="space-y-2 animate-fade-in">
+                  {aiFindings.summary && (
+                    <p className="text-xs text-foreground bg-secondary/30 rounded-lg p-2">{aiFindings.summary}</p>
+                  )}
+                  {aiFindings.findings?.length > 0 && (
+                    <div className="space-y-1">
+                      {aiFindings.findings.map((f: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between rounded-md px-3 py-1.5 bg-secondary/20">
+                          <span className="text-xs text-foreground">{f.area}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-bold rounded-full px-2 py-0.5 ${
+                              f.condition === 'good' ? 'bg-primary/15 text-primary' :
+                              f.condition === 'fair' ? 'bg-accent/15 text-accent' :
+                              f.condition === 'poor' ? 'bg-destructive/15 text-destructive' :
+                              'bg-destructive/20 text-destructive'
+                            }`}>{f.condition}</span>
+                            <span className="font-mono text-[10px] text-muted-foreground">{f.health_percent}%</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {aiFindings.urgent_issues?.length > 0 && (
+                    <div className="rounded-md bg-destructive/10 p-2">
+                      <p className="text-[10px] font-bold text-destructive mb-1">⚠ Urgent Issues</p>
+                      {aiFindings.urgent_issues.map((issue: string, i: number) => (
+                        <p key={i} className="text-[10px] text-destructive/80">• {issue}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Score Display */}
             <div className="flex items-center justify-center">
@@ -299,7 +422,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
                 <span className={`font-mono text-3xl font-bold ${inspectionScore() >= 80 ? 'text-primary' : inspectionScore() >= 50 ? 'text-accent' : 'text-destructive'}`}>
                   {inspectionScore()}%
                 </span>
-                <span className="text-xs text-muted-foreground">Initial Health Score</span>
+                <span className="text-xs text-muted-foreground">{aiFindings ? 'AI Health Score' : 'Manual Health Score'}</span>
               </div>
             </div>
 
