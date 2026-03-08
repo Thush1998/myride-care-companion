@@ -45,6 +45,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '' });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showScan, setShowScan] = useState(true);
+  const [odoDialogOpen, setOdoDialogOpen] = useState(false);
   const photoRef = useRef<HTMLInputElement>(null);
 
   const totalSpent = (services?.reduce((sum, s) => sum + (s.price || 0), 0) ?? 0)
