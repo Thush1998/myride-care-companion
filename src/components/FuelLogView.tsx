@@ -113,7 +113,13 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Total Cost</Label><Input type="number" step="0.01" value={form.total_cost} onChange={(e) => setForm(f => ({ ...f, total_cost: e.target.value }))} placeholder="74.00" className="bg-input border-border font-mono" /></div>
-              <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" /></div>
+              <div>
+                <Label className="text-muted-foreground">Odometer</Label>
+                <Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" />
+                {form.odometer_at_fill && parseFloat(form.odometer_at_fill) < vehicle.current_odometer && (
+                  <p className="mt-1 text-xs text-destructive">Cannot be less than {vehicle.current_odometer.toLocaleString()} km</p>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.fuel_date} onChange={(e) => setForm(f => ({ ...f, fuel_date: e.target.value }))} className="bg-input border-border" /></div>
