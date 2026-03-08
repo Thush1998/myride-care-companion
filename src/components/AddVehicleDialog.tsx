@@ -286,8 +286,8 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
           <div className="space-y-4 animate-fade-in">
             <p className="text-xs text-muted-foreground">Set the last known service mileage for each component, or mark as "Needs Inspection" if unknown.</p>
             <div className="space-y-3">
-              {TRACKED_COMPONENTS.map(tc => {
-                const comp = components[tc.key];
+              {trackedComponents.map(tc => {
+                const comp = components[tc.key] || { lastMileage: '', status: 'unknown' };
                 return (
                   <div key={tc.key} className={`rounded-lg p-3 transition-colors ${comp.status === 'unknown' ? 'bg-accent/10 border border-accent/30' : comp.lastMileage ? 'bg-primary/5 border border-primary/20' : 'bg-secondary/30 border border-border'}`}>
                     <div className="flex items-center justify-between mb-2">
