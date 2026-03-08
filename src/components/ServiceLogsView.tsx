@@ -380,7 +380,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground">
                   <span>{format(new Date(log.service_date), 'MMM d, yyyy')}</span>
                   {log.location_shop && <span>📍 {log.location_shop}</span>}
-                  {log.price != null && <span className="text-primary font-bold">${log.price}</span>}
+                  {log.price != null && <span className="text-primary font-bold">Rs. {log.price}</span>}
                   {log.odometer_at_service != null && <span>{log.odometer_at_service.toLocaleString()} km</span>}
                   {log.replacement_interval_km != null && <span>🔄 every {log.replacement_interval_km.toLocaleString()} km</span>}
                 </div>
