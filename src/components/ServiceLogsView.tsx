@@ -370,6 +370,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-foreground">{log.part_name}</span>
                   {log.part_number && <span className="font-mono text-xs text-muted-foreground">#{log.part_number}</span>}
+                  {(log as any).brand_used && <span className="rounded bg-secondary px-1.5 py-0.5 font-mono text-xs text-muted-foreground">{(log as any).brand_used}</span>}
                   <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${getCatColor((log as any).service_category || 'routine')}`}>
                     {getCatLabel((log as any).service_category || 'routine')}
                   </span>
