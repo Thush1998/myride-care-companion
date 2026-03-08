@@ -148,8 +148,8 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
           <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-lg font-bold text-destructive">$</span></div>
-          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">${totalCost.toLocaleString()}</div></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-sm font-bold text-destructive">Rs.</span></div>
+          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">Rs. {totalCost.toLocaleString()}</div></div>
         </div>
       </div>
 
