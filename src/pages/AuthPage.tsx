@@ -1,7 +1,8 @@
-import { Car, Gauge } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { lovable } from '@/integrations/lovable';
 import { toast } from 'sonner';
+import autoDocLogo from '@/assets/autodoc-logo.png';
 
 const AuthPage = () => {
   const handleGoogleLogin = async () => {
@@ -14,28 +15,26 @@ const AuthPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="animate-fade-in flex flex-col items-center gap-8 px-6">
-        <div className="flex items-center gap-3">
-          <div className="gradient-amber flex h-14 w-14 items-center justify-center rounded-2xl">
-            <Car className="h-8 w-8 text-primary-foreground" />
-          </div>
+        <div className="flex items-center gap-4">
+          <img src={autoDocLogo} alt="AutoDoc" className="h-14 w-14 rounded-xl" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">AutoVault</h1>
-            <p className="text-sm text-muted-foreground">Vehicle Management</p>
+            <h1 className="font-display text-3xl font-bold tracking-wider text-primary uppercase">AutoDoc</h1>
+            <p className="text-sm text-muted-foreground">Vehicle Diagnostics</p>
           </div>
         </div>
 
-        <div className="glass-card w-full max-w-sm p-8">
+        <div className="glass-card neon-border w-full max-w-sm p-8">
           <div className="mb-6 text-center">
-            <Gauge className="mx-auto mb-3 h-10 w-10 text-primary" />
+            <Activity className="mx-auto mb-3 h-10 w-10 text-primary" />
             <h2 className="text-xl font-semibold text-foreground">Welcome Back</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sign in to manage your vehicles
+              Sign in to access your diagnostics
             </p>
           </div>
 
           <Button
             onClick={handleGoogleLogin}
-            className="w-full gap-3 gradient-amber text-primary-foreground font-semibold h-12 text-base hover:opacity-90 transition-opacity"
+            className="w-full gap-3 gradient-cyan text-primary-foreground font-semibold h-12 text-base hover:opacity-90 transition-opacity"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -47,8 +46,8 @@ const AuthPage = () => {
           </Button>
         </div>
 
-        <p className="max-w-xs text-center text-xs text-muted-foreground">
-          Track service history, monitor maintenance, and manage your entire fleet from one dashboard.
+        <p className="max-w-xs text-center font-mono text-xs text-muted-foreground">
+          AI-powered vehicle diagnostics. Track service history, monitor component health, and scan bills instantly.
         </p>
       </div>
     </div>

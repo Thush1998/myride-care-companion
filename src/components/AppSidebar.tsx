@@ -2,6 +2,7 @@ import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Sett
 import { Vehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import autoDocLogo from '@/assets/autodoc-logo.png';
 
 interface AppSidebarProps {
   vehicles: Vehicle[];
@@ -30,9 +31,7 @@ const AppSidebar = ({ vehicles, selectedVehicleId, onSelectVehicle, onAddVehicle
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card/30 backdrop-blur-sm">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-border px-5 py-4">
-        <div className="gradient-cyan flex h-9 w-9 items-center justify-center rounded-lg glow-cyan">
-          <Activity className="h-5 w-5 text-primary-foreground" />
-        </div>
+        <img src={autoDocLogo} alt="AutoDoc" className="h-9 w-9 rounded-lg glow-cyan" />
         <div>
           <span className="font-display text-sm font-bold tracking-wider text-primary uppercase">AutoDoc</span>
           <p className="text-xs text-muted-foreground">Vehicle Diagnostics</p>
