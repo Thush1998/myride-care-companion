@@ -221,7 +221,6 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
               <Button type="submit" disabled={updateVehicle.isPending} className="w-full gradient-cyan text-primary-foreground font-semibold">
                 {updateVehicle.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
-              </Button>
             </form>
           </DialogContent>
         </Dialog>
