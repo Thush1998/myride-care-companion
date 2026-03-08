@@ -81,7 +81,10 @@ export const useUpdateFuelLog = () => {
       if (error) throw error;
       return vehicleId;
     },
-    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
+    onSuccess: (vehicleId: string) => {
+      qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
   });
 };
 
