@@ -14,6 +14,7 @@ import AnatomyView from '@/components/AnatomyView';
 import AuthPage from '@/pages/AuthPage';
 import { useServiceLogs } from '@/hooks/useServiceLogs';
 import { Activity } from 'lucide-react';
+import autoDocLogo from '@/assets/autodoc-logo.png';
 import { Vehicle } from '@/hooks/useVehicles';
 
 const AnatomyViewWrapper = ({ vehicle }: { vehicle: Vehicle }) => {
