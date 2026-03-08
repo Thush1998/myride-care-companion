@@ -24,7 +24,7 @@ const HealthCertificate = ({ services, currentOdometer, vehicleName }: HealthCer
     const healths = related.map(s => {
       if (!s.replacement_interval_km || !s.odometer_at_service) return 100;
       const used = ((currentOdometer - s.odometer_at_service) / s.replacement_interval_km) * 100;
-      return Math.max(0, 100 - used);
+      return Math.min(100, Math.max(0, 100 - used));
     });
 
     const avg = healths.reduce((a, b) => a + b, 0) / healths.length;
