@@ -26,8 +26,11 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = scan_type === "bill"
-      ? `You are a vehicle service bill analyzer. Extract structured data from service bills/invoices/receipts.
+    let systemPrompt: string;
+    let userText: string;
+
+    if (scan_type === "bill") {
+      systemPrompt = `You are a vehicle service bill analyzer. Extract structured data from service bills/invoices/receipts.
 Return a JSON object with these fields:
 - vendor: string (shop/service center name)
 - date: string (YYYY-MM-DD format)
@@ -36,8 +39,26 @@ Return a JSON object with these fields:
 - category: "routine" | "emergency" | "upgrade" (best guess)
 - notes: string (any additional relevant info)
 
-If a field cannot be determined, use null. Always return valid JSON.`
-      : `You are a vehicle part identifier. Analyze the image to identify the vehicle part or component shown.
+If a field cannot be determined, use null. Always return valid JSON.`;
+      userText = "Extract all billing data from this service bill/receipt/invoice image.";
+    } else if (scan_type === "inspection") {
+      systemPrompt = `You are an expert vehicle inspector. Analyze the photo of a vehicle engine bay, dashboard, or exterior and assess its visual condition.
+
+Return a JSON object with:
+- overall_health_percent: number (0-100, your overall assessment)
+- findings: array of objects, each with:
+  - area: string (e.g., "Engine Bay", "Belts", "Hoses", "Battery", "Dashboard Warning Lights", "Rust", "Fluid Levels")
+  - condition: "good" | "fair" | "poor" | "critical"
+  - detail: string (brief observation)
+  - health_percent: number (0-100 for this specific area)
+- summary: string (2-3 sentence overall assessment)
+- urgent_issues: array of strings (anything needing immediate attention)
+- recommended_inspections: array of strings (components that should be professionally inspected)
+
+Be thorough but realistic. Base your assessment on visible evidence only. Always return valid JSON.`;
+      userText = "Analyze this vehicle photo and provide a detailed visual condition inspection report. Look for rust, belt wear, hose condition, fluid leaks, warning lights, corrosion, and general cleanliness/maintenance level.";
+    } else {
+      systemPrompt = `You are a vehicle part identifier. Analyze the image to identify the vehicle part or component shown.
 Return a JSON object with these fields:
 - part_name: string (identified part name)
 - condition: "good" | "worn" | "damaged" | "unknown"
@@ -47,6 +68,8 @@ Return a JSON object with these fields:
 - notes: string (observations about the part)
 
 Always return valid JSON.`;
+      userText = "Identify this vehicle part and assess its condition.";
+    }
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
