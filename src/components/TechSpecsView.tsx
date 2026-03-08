@@ -10,7 +10,9 @@ interface TechSpecsViewProps {
   vehicle: Vehicle;
 }
 
-const IDENTITY_FIELDS = [
+type FieldDef = { key: string; label: string; placeholder: string; type?: string };
+
+const IDENTITY_FIELDS: FieldDef[] = [
   { key: 'chassis_number', label: 'Chassis Number', placeholder: 'e.g. V45W-0123456' },
   { key: 'engine_number', label: 'Engine Number', placeholder: 'e.g. 6G72-AX1234' },
   { key: 'paint_code', label: 'Paint Code', placeholder: 'e.g. A31 Ivory White' },
