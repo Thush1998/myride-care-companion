@@ -1,7 +1,8 @@
-import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Settings2, Zap, Activity } from 'lucide-react';
-import { Vehicle } from '@/hooks/useVehicles';
+import { Car, Gauge, Wrench, Navigation, LogOut, Plus, Fuel, FileText, Cpu, Settings2, Zap, Activity, Trash2 } from 'lucide-react';
+import { Vehicle, useDeleteVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import autoDocLogo from '@/assets/autodoc-logo.png';
 
 interface AppSidebarProps {
