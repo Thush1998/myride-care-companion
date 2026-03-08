@@ -61,7 +61,10 @@ export const useAddFuelLog = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_: any, vars: any) => qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] }),
+    onSuccess: (_: any, vars: any) => {
+      qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
   });
 };
 
