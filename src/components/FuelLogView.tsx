@@ -128,18 +128,22 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
       </Dialog>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Fuel className="h-5 w-5 text-primary" /></div>
           <div><div className="text-xs text-muted-foreground">Total Fuel</div><div className="font-mono text-lg font-semibold text-foreground">{totalLiters.toFixed(1)} L</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><TrendingDown className="h-5 w-5 text-primary" /></div>
-          <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div></div>
+          <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL != null ? `${avgKmPerL.toFixed(1)} km/L` : 'N/A'}</div></div>
+        </div>
+        <div className="glass-card flex items-center gap-4 p-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Gauge className="h-5 w-5 text-primary" /></div>
+          <div><div className="text-xs text-muted-foreground">L / 100 km</div><div className="font-mono text-lg font-semibold text-foreground">{lPer100 != null ? lPer100.toFixed(1) : 'N/A'}</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-sm font-bold text-destructive">Rs.</span></div>
-          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">Rs. {totalCost.toLocaleString()}</div></div>
+          <div><div className="text-xs text-muted-foreground">Cost/km</div><div className="font-mono text-lg font-semibold text-foreground">{costPerKm != null ? `Rs. ${costPerKm.toFixed(2)}` : 'N/A'}</div></div>
         </div>
       </div>
 

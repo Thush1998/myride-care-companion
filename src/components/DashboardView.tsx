@@ -215,7 +215,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           <StatCard icon={Wrench} label="Total Services" value={String(services?.length ?? 0)} />
           <StatCard icon={TrendingUp} label="Service + Mods" value={`Rs. ${totalSpent.toLocaleString()}`} />
           <StatCard icon={Activity} label="Fuel Spent" value={`Rs. ${fuelSpent.toLocaleString()}`} />
-          <StatCard icon={DollarSign} label="Cost/km" value={`Rs. ${cpk}`} highlight />
+          <StatCard icon={DollarSign} label="Cost/km" value={cpkDisplay} highlight />
         </div>
 
         {/* OBD Charts */}
