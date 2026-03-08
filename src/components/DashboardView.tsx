@@ -51,7 +51,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     + (mods?.reduce((sum, m) => sum + (m.cost || 0), 0) ?? 0);
   const fuelSpent = fuelLogs?.reduce((sum, f) => sum + (f.total_cost || 0), 0) ?? 0;
   const grandTotal = totalSpent + fuelSpent;
-  const cpk = vehicle.current_odometer > 0 ? (grandTotal / vehicle.current_odometer).toFixed(2) : '0.00';
+  // Trip-based cost/km using last 5 fuel entries
+  const fuelCpk = calcCostPerKm(fuelLogs || [], 5);
+  const cpkDisplay = fuelCpk != null ? `Rs. ${fuelCpk.toFixed(2)}` : 'N/A';
 
   const warnings = (services || []).filter((s) => {
     if (!s.replacement_interval_km || !s.odometer_at_service) return false;
