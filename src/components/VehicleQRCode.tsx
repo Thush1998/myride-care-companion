@@ -16,9 +16,9 @@ const VehicleQRCode = ({ vehicleId, vehicleName, plateNo }: VehicleQRCodeProps) 
   const printRef = useRef<HTMLDivElement>(null);
   const [phone, setPhone] = useState('');
   
-  const PRODUCTION_URL = 'https://myride-care-companion.lovable.app';
-  const baseUrl = `${PRODUCTION_URL}/history?v=${vehicleId}`;
-  const url = phone.trim() ? `${baseUrl}&phone=${encodeURIComponent(phone.trim())}` : baseUrl;
+  const PRODUCTION_URL = 'https://myride-care-companion.vercel.app';
+  const baseUrl = `${PRODUCTION_URL}/vehicle/${vehicleId}`;
+  const url = phone.trim() ? `${baseUrl}?phone=${encodeURIComponent(phone.trim())}` : baseUrl;
 
   const handlePrint = () => {
     const content = printRef.current;

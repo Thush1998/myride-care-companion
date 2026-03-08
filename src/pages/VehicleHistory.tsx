@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Wrench, Calendar, DollarSign, Gauge, Phone, ChevronRight, CalendarClock, Image as ImageIcon } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
@@ -55,7 +55,8 @@ const MiniRing = ({ percent, label, hasData }: { percent: number; label: string;
 
 const VehicleHistory = () => {
   const [searchParams] = useSearchParams();
-  const vehicleId = searchParams.get('v');
+  const { vehicleId: routeVehicleId } = useParams<{ vehicleId: string }>();
+  const vehicleId = routeVehicleId || searchParams.get('v');
   const contactPhone = searchParams.get('phone');
   const [vehicle, setVehicle] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
