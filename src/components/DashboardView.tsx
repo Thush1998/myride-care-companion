@@ -203,6 +203,9 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         {/* Component Health Rings */}
         <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
 
+        {/* Maintenance Forecast */}
+        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard icon={Gauge} label="Odometer" value={`${Number(vehicle.current_odometer).toLocaleString()} km`} />
