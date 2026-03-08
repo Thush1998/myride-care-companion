@@ -75,6 +75,7 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
         replacement_interval_km: form.replacement_interval_km ? parseFloat(form.replacement_interval_km) : null,
         notes: form.notes.trim() || null,
         service_category: form.service_category,
+        brand_used: form.brand_used.trim() || null,
       };
       if (editingId) {
         await updateLog.mutateAsync({ id: editingId, vehicleId: vehicle.id, ...payload });
