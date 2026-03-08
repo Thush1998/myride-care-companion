@@ -149,18 +149,96 @@ const formatDuration = (startTime: string) => {
   return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
+const SummaryStatCard = ({ icon: Icon, label, value, unit }: {
+  icon: React.ElementType; label: string; value: string; unit: string;
+}) => (
+  <div className="glass-card p-5 flex flex-col items-center gap-2 flex-1 min-w-[100px]">
+    <div className="h-10 w-10 rounded-full flex items-center justify-center bg-primary/10 border border-primary/20">
+      <Icon className="h-5 w-5 text-primary" />
+    </div>
+    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">{label}</span>
+    <div className="flex items-baseline gap-1">
+      <span className="font-mono text-2xl font-bold text-foreground"
+        style={{ textShadow: '0 0 12px hsl(185 100% 50% / 0.2)' }}>
+        {value}
+      </span>
+      {unit && <span className="text-[10px] text-muted-foreground font-mono">{unit}</span>}
+    </div>
+  </div>
+);
+
+const TripSummaryModal = ({ distance, maxSpeed, elapsed, onSave, onDiscard, isSaving }: {
+  distance: number; maxSpeed: number; elapsed: string;
+  onSave: () => void; onDiscard: () => void; isSaving: boolean;
+}) => (
+  <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-md p-4">
+    <div className="w-full max-w-md animate-fade-in">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 border border-primary/20 mb-4"
+          style={{ boxShadow: '0 0 40px -10px hsl(185 100% 50% / 0.3)' }}>
+          <Trophy className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="font-display text-2xl font-bold text-foreground tracking-wide"
+          style={{ textShadow: '0 0 20px hsl(185 100% 50% / 0.3)' }}>
+          TRIP COMPLETE
+        </h2>
+        <p className="text-sm text-muted-foreground font-mono mt-1">Here's your off-road summary</p>
+      </div>
+
+      {/* Stats */}
+      <div className="flex gap-3 mb-6">
+        <SummaryStatCard icon={Route} label="Distance" value={distance.toFixed(2)} unit="km" />
+        <SummaryStatCard icon={Zap} label="Top Speed" value={maxSpeed.toFixed(1)} unit="km/h" />
+        <SummaryStatCard icon={Timer} label="Duration" value={elapsed} unit="" />
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col gap-3">
+        <Button onClick={onSave} disabled={isSaving}
+          className="w-full h-12 gap-2 gradient-cyan text-primary-foreground font-bold font-mono rounded-xl"
+          style={{ boxShadow: '0 0 25px -5px hsl(185 100% 50% / 0.4)' }}>
+          <Save className="h-5 w-5" />
+          {isSaving ? 'Saving…' : 'SAVE TO HISTORY'}
+        </Button>
+        <Button onClick={onDiscard} disabled={isSaving} variant="ghost"
+          className="w-full h-10 gap-2 text-muted-foreground font-mono text-sm hover:text-destructive">
+          <X className="h-4 w-4" />
+          Discard Trip
+        </Button>
+      </div>
+    </div>
+  </div>
+);
+
 const ActiveTripDashboard = ({
   vehicle, activeTrip, onStopTrip, isEnding, distance, currentSpeed, maxSpeed, avgSpeed
 }: ActiveTripDashboardProps) => {
   const [elapsed, setElapsed] = useState('00:00:00');
   const [showMap, setShowMap] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [frozenElapsed, setFrozenElapsed] = useState('00:00:00');
 
   useEffect(() => {
+    if (showSummary) return;
     const interval = setInterval(() => {
       setElapsed(formatDuration(activeTrip.start_time));
     }, 1000);
     return () => clearInterval(interval);
-  }, [activeTrip.start_time]);
+  }, [activeTrip.start_time, showSummary]);
+
+  const handleStopClick = () => {
+    setFrozenElapsed(elapsed);
+    setShowSummary(true);
+  };
+
+  const handleSave = () => {
+    onStopTrip();
+  };
+
+  const handleDiscard = () => {
+    onStopTrip();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background overflow-auto">
@@ -194,10 +272,8 @@ const ActiveTripDashboard = ({
 
       {/* Main cockpit area */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 gap-6">
-        {/* Speedometer */}
         <SpeedometerGauge speed={currentSpeed} maxSpeed={maxSpeed} />
 
-        {/* Metrics grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-2xl">
           <MetricCard icon={Navigation} label="Distance" value={distance.toFixed(2)} unit="km" />
           <MetricCard icon={Clock} label="Duration" value={elapsed} unit="" />
@@ -205,7 +281,6 @@ const ActiveTripDashboard = ({
           <MetricCard icon={Zap} label="Max Speed" value={maxSpeed.toFixed(1)} unit="km/h" accent />
         </div>
 
-        {/* Odometer info */}
         <div className="flex gap-6 text-center">
           <div>
             <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Start ODO</span>
@@ -221,16 +296,28 @@ const ActiveTripDashboard = ({
       {/* Bottom stop button */}
       <div className="relative z-10 p-6 flex justify-center">
         <Button
-          onClick={onStopTrip}
-          disabled={isEnding}
+          onClick={handleStopClick}
+          disabled={isEnding || showSummary}
           variant="destructive"
           className="w-full max-w-md h-14 text-lg font-bold font-mono gap-3 rounded-2xl shadow-lg"
           style={{ boxShadow: '0 0 30px -5px hsl(0 80% 55% / 0.4)' }}
         >
           <Square className="h-5 w-5" />
-          {isEnding ? 'Ending Trip…' : 'STOP TRIP'}
+          STOP TRIP
         </Button>
       </div>
+
+      {/* Summary Modal */}
+      {showSummary && (
+        <TripSummaryModal
+          distance={distance}
+          maxSpeed={maxSpeed}
+          elapsed={frozenElapsed}
+          onSave={handleSave}
+          onDiscard={handleDiscard}
+          isSaving={isEnding}
+        />
+      )}
     </div>
   );
 };
