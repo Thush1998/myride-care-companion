@@ -332,7 +332,11 @@ const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Part Number</Label><Input value={form.part_number} onChange={e => setForm(f => ({...f, part_number: e.target.value}))} placeholder="OEM-12345" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Brand Used</Label><Input value={form.brand_used} onChange={e => setForm(f => ({...f, brand_used: e.target.value}))} placeholder="Sakura, Vic, OEM..." className="bg-input border-border" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Shop / Location</Label><Input value={form.location_shop} onChange={e => setForm(f => ({...f, location_shop: e.target.value}))} placeholder="AutoZone" className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label className="text-muted-foreground">Price ($)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="45.99" className="bg-input border-border" /></div>
