@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { VehicleCategory } from '@/lib/vehicleCategories';
 
 export type Vehicle = {
   id: string;
@@ -18,6 +19,7 @@ export type Vehicle = {
   paint_code: string | null;
   oil_grade: string | null;
   tire_pressure_psi: number | null;
+  category: VehicleCategory;
   created_at: string;
   updated_at: string;
 };

@@ -115,7 +115,8 @@ const CircularRing = ({
   );
 };
 
-const HealthRings = ({ services, currentOdometer }: HealthRingsProps) => {
+const HealthRings = ({ services, currentOdometer, category = 'car' }: HealthRingsProps) => {
+  const TRACKED_PARTS = getTrackedParts(category);
   // Estimate avg daily km from services
   const allOdos = services
     .filter(s => s.odometer_at_service && s.odometer_at_service > 0)

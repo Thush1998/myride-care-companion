@@ -1,19 +1,16 @@
 import { Shield, Heart, AlertTriangle, CheckCircle } from 'lucide-react';
 import { ServiceLog } from '@/hooks/useServiceLogs';
+import { HEALTH_SYSTEMS, type VehicleCategory } from '@/lib/vehicleCategories';
 
 interface HealthCertificateProps {
   services: ServiceLog[];
   currentOdometer: number;
   vehicleName: string;
+  category?: VehicleCategory;
 }
 
-const SYSTEMS = [
-  { key: 'engine', label: 'Engine System', parts: ['engine oil', 'oil filter', 'spark plug', 'timing belt', 'coolant'], icon: '⚙️' },
-  { key: 'transmission', label: 'Transmission', parts: ['transmission', 'gearbox', 'clutch', 'differential'], icon: '🔧' },
-  { key: 'suspension', label: 'Suspension & Brakes', parts: ['brake pad', 'shock', 'strut', 'spring', 'ball joint', 'tie rod'], icon: '🛞' },
-];
-
-const HealthCertificate = ({ services, currentOdometer, vehicleName }: HealthCertificateProps) => {
+const HealthCertificate = ({ services, currentOdometer, vehicleName, category = 'car' }: HealthCertificateProps) => {
+  const SYSTEMS = HEALTH_SYSTEMS[category];
   const systemHealth = SYSTEMS.map(sys => {
     const related = services.filter(s =>
       sys.parts.some(p => s.part_name.toLowerCase().includes(p))
