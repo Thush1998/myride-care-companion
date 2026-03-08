@@ -25,7 +25,7 @@ const emptyForm = () => ({
   part_name: '', part_number: '', location_shop: '', price: '',
   service_date: new Date().toISOString().split('T')[0],
   odometer_at_service: '', replacement_interval_km: '', notes: '',
-  service_category: 'routine',
+  service_category: 'routine', brand_used: '',
 });
 
 const ServiceLogsView = ({ vehicle }: ServiceLogsViewProps) => {
