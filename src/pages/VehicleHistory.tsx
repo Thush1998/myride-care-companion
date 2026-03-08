@@ -69,39 +69,64 @@ const VehicleHistory = () => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
       try {
-        console.log('[VehicleHistory] Fetching vehicle with ID:', vehicleId);
+        console.log('[VehicleHistory] Public fetch for vehicle ID:', vehicleId);
 
-        // Direct Supabase client queries — uses anon key, no auth session required
-        const [vRes, sRes, mRes] = await Promise.all([
-          supabase.from('vehicles').select('*').eq('id', vehicleId).maybeSingle(),
-          supabase.from('service_logs').select('*').eq('vehicle_id', vehicleId).order('service_date', { ascending: false }),
-          supabase.from('modifications').select('*').eq('vehicle_id', vehicleId).order('mod_date', { ascending: false }),
-        ]);
+        const { data, error: fnError } = await supabase.functions.invoke('public-vehicle', {
+          body: { id: vehicleId },
+        });
 
-        console.log('[VehicleHistory] Vehicle result:', { data: vRes.data, error: vRes.error });
-        console.log('[VehicleHistory] Services count:', sRes.data?.length, 'error:', sRes.error);
-        console.log('[VehicleHistory] Mods count:', mRes.data?.length, 'error:', mRes.error);
+        console.log('[VehicleHistory] Function response:', { data, error: fnError });
 
-        if (vRes.error) {
-          setError(`Database error: ${vRes.error.message}`);
+        if (fnError) {
+          let detailedError = fnError.message || 'Failed to load vehicle data';
+          const responseContext = (fnError as any)?.context;
+
+          if (responseContext instanceof Response) {
+            try {
+              const payload = await responseContext.clone().json();
+              detailedError = payload?.error || payload?.message || detailedError;
+            } catch {
+              try {
+                const textPayload = await responseContext.text();
+                if (textPayload) detailedError = textPayload;
+              } catch {
+                // ignore
+              }
+            }
+          }
+
+          setError(detailedError);
           setLoading(false);
           return;
         }
 
-        if (!vRes.data) {
+        const payload = (data || {}) as {
+          error?: string;
+          vehicle?: any;
+          services?: any[];
+          modifications?: any[];
+        };
+
+        if (payload.error) {
+          setError(payload.error);
+          setLoading(false);
+          return;
+        }
+
+        if (!payload.vehicle) {
           setError('Vehicle not found');
           setLoading(false);
           return;
         }
 
-        // Strip user_id before setting state
-        const { user_id, ...vehicle } = vRes.data;
-        setVehicle(vehicle);
-        setServices((sRes.data || []).map(({ user_id, ...rest }: any) => rest));
-        setMods((mRes.data || []).map(({ user_id, ...rest }: any) => rest));
+        const { user_id, ...safeVehicle } = payload.vehicle;
+        setVehicle(safeVehicle);
+        setServices((payload.services || []).map(({ user_id, ...rest }: any) => rest));
+        setMods((payload.modifications || []).map(({ user_id, ...rest }: any) => rest));
       } catch (e) {
+        const detailedError = e instanceof Error ? e.message : 'Failed to load vehicle data';
         console.error('[VehicleHistory] Unexpected error:', e);
-        setError('Failed to load vehicle data');
+        setError(detailedError);
       }
       setLoading(false);
     };
