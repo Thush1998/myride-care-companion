@@ -229,13 +229,14 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           services={services || []}
           currentOdometer={vehicle.current_odometer}
           vehicleName={`${vehicle.make} ${vehicle.model}`}
+          category={vehicle.category}
         />
 
         {/* Component Health Rings */}
-        <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
+        <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} category={vehicle.category} />
 
         {/* Maintenance Forecast */}
-        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
+        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} category={vehicle.category} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">
