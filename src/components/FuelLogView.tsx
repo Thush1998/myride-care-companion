@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Fuel, Plus, Trash2, TrendingDown } from 'lucide-react';
+import { Fuel, Plus, Trash2, TrendingDown, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useFuelLogs, useAddFuelLog, useDeleteFuelLog } from '@/hooks/useFuelLogs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useFuelLogs, useAddFuelLog, useUpdateFuelLog, useDeleteFuelLog, FuelLog } from '@/hooks/useFuelLogs';
 import { Vehicle } from '@/hooks/useVehicles';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -14,22 +14,23 @@ interface FuelLogViewProps {
   vehicle: Vehicle;
 }
 
+const emptyForm = () => ({
+  liters: '', price_per_liter: '', total_cost: '', fuel_date: new Date().toISOString().split('T')[0],
+  odometer_at_fill: '', fuel_type: 'Petrol', station: '', notes: '',
+});
+
 const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const { data: logs, isLoading } = useFuelLogs(vehicle.id);
   const addLog = useAddFuelLog();
+  const updateLog = useUpdateFuelLog();
   const deleteLog = useDeleteFuelLog();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm());
 
-  const [form, setForm] = useState({
-    liters: '', price_per_liter: '', total_cost: '', fuel_date: new Date().toISOString().split('T')[0],
-    odometer_at_fill: '', fuel_type: 'Petrol', station: '', notes: '',
-  });
-
-  // Calculate stats
   const totalCost = logs?.reduce((sum, l) => sum + (l.total_cost || 0), 0) ?? 0;
   const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
 
-  // Calculate avg km/L from consecutive fill-ups with odometer readings
   const sortedWithOdo = (logs || []).filter(l => l.odometer_at_fill).sort((a, b) => (a.odometer_at_fill || 0) - (b.odometer_at_fill || 0));
   let avgKmPerL = 0;
   if (sortedWithOdo.length >= 2) {
@@ -41,45 +42,56 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
     if (totalL > 0) avgKmPerL = totalKm / totalL;
   }
 
+  const openAdd = () => { setEditingId(null); setForm(emptyForm()); setOpen(true); };
+
+  const openEdit = (log: FuelLog) => {
+    setEditingId(log.id);
+    setForm({
+      liters: String(log.liters), price_per_liter: log.price_per_liter != null ? String(log.price_per_liter) : '',
+      total_cost: log.total_cost != null ? String(log.total_cost) : '', fuel_date: log.fuel_date,
+      odometer_at_fill: log.odometer_at_fill != null ? String(log.odometer_at_fill) : '',
+      fuel_type: log.fuel_type || 'Petrol', station: log.station || '', notes: log.notes || '',
+    });
+    setOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.liters) { toast.error('Liters is required'); return; }
     try {
-      await addLog.mutateAsync({
-        vehicle_id: vehicle.id,
+      const payload = {
         liters: parseFloat(form.liters),
         fuel_date: form.fuel_date,
-        price_per_liter: form.price_per_liter ? parseFloat(form.price_per_liter) : undefined,
-        total_cost: form.total_cost ? parseFloat(form.total_cost) : undefined,
-        odometer_at_fill: form.odometer_at_fill ? parseFloat(form.odometer_at_fill) : undefined,
+        price_per_liter: form.price_per_liter ? parseFloat(form.price_per_liter) : null,
+        total_cost: form.total_cost ? parseFloat(form.total_cost) : null,
+        odometer_at_fill: form.odometer_at_fill ? parseFloat(form.odometer_at_fill) : null,
         fuel_type: form.fuel_type,
-        station: form.station.trim() || undefined,
-        notes: form.notes.trim() || undefined,
-      });
-      toast.success('Fuel log added!');
-      setOpen(false);
-      setForm({ liters: '', price_per_liter: '', total_cost: '', fuel_date: new Date().toISOString().split('T')[0], odometer_at_fill: '', fuel_type: 'Petrol', station: '', notes: '' });
-    } catch { toast.error('Failed to add fuel log'); }
+        station: form.station.trim() || null,
+        notes: form.notes.trim() || null,
+      };
+      if (editingId) {
+        await updateLog.mutateAsync({ id: editingId, vehicleId: vehicle.id, ...payload });
+        toast.success('Fuel log updated!');
+      } else {
+        await addLog.mutateAsync({ vehicle_id: vehicle.id, ...payload as any });
+        toast.success('Fuel log added!');
+      }
+      setOpen(false); setForm(emptyForm()); setEditingId(null);
+    } catch { toast.error('Failed to save fuel log'); }
   };
 
-  // Auto-calculate total cost
   const handleLitersChange = (val: string) => {
     setForm(f => {
-      const newForm = { ...f, liters: val };
-      if (val && f.price_per_liter) {
-        newForm.total_cost = (parseFloat(val) * parseFloat(f.price_per_liter)).toFixed(2);
-      }
-      return newForm;
+      const n = { ...f, liters: val };
+      if (val && f.price_per_liter) n.total_cost = (parseFloat(val) * parseFloat(f.price_per_liter)).toFixed(2);
+      return n;
     });
   };
-
   const handlePriceChange = (val: string) => {
     setForm(f => {
-      const newForm = { ...f, price_per_liter: val };
-      if (val && f.liters) {
-        newForm.total_cost = (parseFloat(f.liters) * parseFloat(val)).toFixed(2);
-      }
-      return newForm;
+      const n = { ...f, price_per_liter: val };
+      if (val && f.liters) n.total_cost = (parseFloat(f.liters) * parseFloat(val)).toFixed(2);
+      return n;
     });
   };
 
@@ -87,96 +99,57 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Fuel Log</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2 gradient-amber text-primary-foreground font-semibold">
-              <Plus className="h-4 w-4" /> Add Fill-up
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
-            <DialogHeader>
-              <DialogTitle className="text-foreground">Log Fuel Fill-up</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-muted-foreground">Liters *</Label>
-                  <Input type="number" step="0.01" value={form.liters} onChange={(e) => handleLitersChange(e.target.value)} placeholder="40.0" className="bg-input border-border font-mono" />
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Price/Liter</Label>
-                  <Input type="number" step="0.01" value={form.price_per_liter} onChange={(e) => handlePriceChange(e.target.value)} placeholder="1.85" className="bg-input border-border font-mono" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-muted-foreground">Total Cost</Label>
-                  <Input type="number" step="0.01" value={form.total_cost} onChange={(e) => setForm(f => ({ ...f, total_cost: e.target.value }))} placeholder="74.00" className="bg-input border-border font-mono" />
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Odometer</Label>
-                  <Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-muted-foreground">Date</Label>
-                  <Input type="date" value={form.fuel_date} onChange={(e) => setForm(f => ({ ...f, fuel_date: e.target.value }))} className="bg-input border-border" />
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Fuel Type</Label>
-                  <Select value={form.fuel_type} onValueChange={(v) => setForm(f => ({ ...f, fuel_type: v }))}>
-                    <SelectTrigger className="bg-input border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Petrol">Petrol</SelectItem>
-                      <SelectItem value="Diesel">Diesel</SelectItem>
-                      <SelectItem value="EV">Electric</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Station</Label>
-                <Input value={form.station} onChange={(e) => setForm(f => ({ ...f, station: e.target.value }))} placeholder="Shell Main St" className="bg-input border-border" />
-              </div>
-              <Button type="submit" disabled={addLog.isPending} className="w-full gradient-amber text-primary-foreground font-semibold">
-                {addLog.isPending ? 'Adding...' : 'Log Fill-up'}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={openAdd} className="gap-2 gradient-amber text-primary-foreground font-semibold">
+          <Plus className="h-4 w-4" /> Add Fill-up
+        </Button>
       </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto bg-card border-border">
+          <DialogHeader><DialogTitle className="text-foreground">{editingId ? 'Edit Fuel Log' : 'Log Fuel Fill-up'}</DialogTitle></DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Liters *</Label><Input type="number" step="0.01" value={form.liters} onChange={(e) => handleLitersChange(e.target.value)} placeholder="40.0" className="bg-input border-border font-mono" /></div>
+              <div><Label className="text-muted-foreground">Price/Liter</Label><Input type="number" step="0.01" value={form.price_per_liter} onChange={(e) => handlePriceChange(e.target.value)} placeholder="1.85" className="bg-input border-border font-mono" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Total Cost</Label><Input type="number" step="0.01" value={form.total_cost} onChange={(e) => setForm(f => ({ ...f, total_cost: e.target.value }))} placeholder="74.00" className="bg-input border-border font-mono" /></div>
+              <div><Label className="text-muted-foreground">Odometer</Label><Input type="number" value={form.odometer_at_fill} onChange={(e) => setForm(f => ({ ...f, odometer_at_fill: e.target.value }))} placeholder={String(vehicle.current_odometer)} className="bg-input border-border font-mono" /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-muted-foreground">Date</Label><Input type="date" value={form.fuel_date} onChange={(e) => setForm(f => ({ ...f, fuel_date: e.target.value }))} className="bg-input border-border" /></div>
+              <div><Label className="text-muted-foreground">Fuel Type</Label>
+                <Select value={form.fuel_type} onValueChange={(v) => setForm(f => ({ ...f, fuel_type: v }))}>
+                  <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Petrol">Petrol</SelectItem>
+                    <SelectItem value="Diesel">Diesel</SelectItem>
+                    <SelectItem value="EV">Electric</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label className="text-muted-foreground">Station</Label><Input value={form.station} onChange={(e) => setForm(f => ({ ...f, station: e.target.value }))} placeholder="Shell Main St" className="bg-input border-border" /></div>
+            <Button type="submit" disabled={addLog.isPending || updateLog.isPending} className="w-full gradient-amber text-primary-foreground font-semibold">
+              {editingId ? (updateLog.isPending ? 'Saving...' : 'Save Changes') : (addLog.isPending ? 'Adding...' : 'Log Fill-up')}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="glass-card flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Fuel className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Total Fuel</div>
-            <div className="font-mono text-lg font-semibold text-foreground">{totalLiters.toFixed(1)} L</div>
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Fuel className="h-5 w-5 text-primary" /></div>
+          <div><div className="text-xs text-muted-foreground">Total Fuel</div><div className="font-mono text-lg font-semibold text-foreground">{totalLiters.toFixed(1)} L</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <TrendingDown className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Avg Consumption</div>
-            <div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div>
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><TrendingDown className="h-5 w-5 text-primary" /></div>
+          <div><div className="text-xs text-muted-foreground">Avg Consumption</div><div className="font-mono text-lg font-semibold text-foreground">{avgKmPerL > 0 ? `${avgKmPerL.toFixed(1)} km/L` : '—'}</div></div>
         </div>
         <div className="glass-card flex items-center gap-4 p-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
-            <span className="text-lg font-bold text-destructive">$</span>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground">Total Spent</div>
-            <div className="font-mono text-lg font-semibold text-foreground">${totalCost.toLocaleString()}</div>
-          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10"><span className="text-lg font-bold text-destructive">$</span></div>
+          <div><div className="text-xs text-muted-foreground">Total Spent</div><div className="font-mono text-lg font-semibold text-foreground">${totalCost.toLocaleString()}</div></div>
         </div>
       </div>
 
@@ -205,12 +178,14 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
                   {log.odometer_at_fill != null && <span>{log.odometer_at_fill.toLocaleString()} km</span>}
                 </div>
               </div>
-              <button
-                onClick={() => deleteLog.mutate({ id: log.id, vehicleId: vehicle.id })}
-                className="ml-3 shrink-0 rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <div className="ml-3 flex shrink-0 gap-1">
+                <button onClick={() => openEdit(log)} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-primary">
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button onClick={() => deleteLog.mutate({ id: log.id, vehicleId: vehicle.id })} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

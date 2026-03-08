@@ -18,11 +18,14 @@ export type FuelLog = {
   updated_at: string;
 };
 
+// Use type assertion for tables not yet in generated types
+const db = supabase as any;
+
 export const useFuelLogs = (vehicleId: string | null) => {
   return useQuery({
     queryKey: ['fuel_logs', vehicleId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('fuel_logs')
         .select('*')
         .eq('vehicle_id', vehicleId!)
@@ -50,7 +53,7 @@ export const useAddFuelLog = () => {
       station?: string;
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('fuel_logs')
         .insert({ ...log, user_id: user!.id })
         .select()
@@ -58,7 +61,24 @@ export const useAddFuelLog = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] }),
+    onSuccess: (_: any, vars: any) => qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] }),
+  });
+};
+
+export const useUpdateFuelLog = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, vehicleId, ...updates }: {
+      id: string; vehicleId: string;
+      liters?: number; fuel_date?: string; price_per_liter?: number | null;
+      total_cost?: number | null; odometer_at_fill?: number | null;
+      fuel_type?: string; station?: string | null; notes?: string | null;
+    }) => {
+      const { error } = await db.from('fuel_logs').update(updates).eq('id', id);
+      if (error) throw error;
+      return vehicleId;
+    },
+    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
   });
 };
 
@@ -66,10 +86,10 @@ export const useDeleteFuelLog = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, vehicleId }: { id: string; vehicleId: string }) => {
-      const { error } = await supabase.from('fuel_logs').delete().eq('id', id);
+      const { error } = await db.from('fuel_logs').delete().eq('id', id);
       if (error) throw error;
       return vehicleId;
     },
-    onSuccess: (vehicleId) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
+    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
   });
 };
