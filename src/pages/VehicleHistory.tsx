@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Wrench, Calendar, DollarSign, Gauge } from 'lucide-react';
-import autodocLogo from '@/assets/autodoc-logo.png';
+import driveDocLogo from '@/assets/drivedoc-logo.png';
 
 const VehicleHistory = () => {
   const [searchParams] = useSearchParams();
@@ -33,7 +33,7 @@ const VehicleHistory = () => {
       <div className="mx-auto max-w-2xl space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">
-          <img src={autodocLogo} alt="AutoDoc" className="h-10 w-10" />
+          <img src={driveDocLogo} alt="DriveDoc" className="h-10 w-10" />
           <div>
             <h1 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h1>
             <p className="text-sm text-muted-foreground">{vehicle.year} · {vehicle.plate_no}</p>
