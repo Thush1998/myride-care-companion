@@ -126,8 +126,8 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
       <div className="animate-fade-in space-y-6">
         {/* Vehicle Header */}
         <div className="glass-card neon-border overflow-hidden">
-          <div className="flex items-stretch">
-            <div className="relative h-40 w-40 shrink-0 bg-secondary/50 group">
+          <div className="flex flex-col sm:flex-row items-stretch">
+            <div className="relative h-32 sm:h-40 w-full sm:w-40 shrink-0 bg-secondary/50 group">
               {vehicle.image_url ? (
                 <img src={vehicle.image_url} alt={vehicle.make} className="h-full w-full object-cover" />
               ) : (
