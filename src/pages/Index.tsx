@@ -12,7 +12,14 @@ import TechSpecsView from '@/components/TechSpecsView';
 import ModificationsView from '@/components/ModificationsView';
 import AnatomyView from '@/components/AnatomyView';
 import AuthPage from '@/pages/AuthPage';
+import { useServiceLogs } from '@/hooks/useServiceLogs';
 import { Activity } from 'lucide-react';
+import { Vehicle } from '@/hooks/useVehicles';
+
+const AnatomyViewWrapper = ({ vehicle }: { vehicle: Vehicle }) => {
+  const { data: services } = useServiceLogs(vehicle.id);
+  return <AnatomyView vehicle={vehicle} services={services || []} />;
+};
 
 const Index = () => {
   const { user, loading } = useAuth();
