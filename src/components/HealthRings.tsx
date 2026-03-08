@@ -65,8 +65,14 @@ const CircularRing = ({
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bg-card border-border">
+      <PopoverContent className={`w-64 bg-card border-border ${isCritical ? 'border-destructive/50' : ''}`}>
         <div className="space-y-2">
+          {isCritical && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-center">
+              <p className="text-xs font-bold text-destructive">🚨 Critical Service Required</p>
+              <p className="text-[10px] text-destructive/80">This component has exceeded safe service limits</p>
+            </div>
+          )}
           <h4 className="font-display text-xs font-bold tracking-wider text-primary uppercase">{label} Details</h4>
           {hasData ? (
             <div className="space-y-1.5 font-mono text-xs">
