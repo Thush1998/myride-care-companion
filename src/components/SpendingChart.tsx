@@ -35,7 +35,7 @@ const SpendingChart = ({ services }: SpendingChartProps) => {
   return (
     <div className="glass-card neon-border p-5">
       <h3 className="mb-1 font-display text-xs font-bold tracking-wider text-primary uppercase">Maintenance Spending</h3>
-      <p className="mb-4 font-mono text-2xl font-bold text-foreground">${total.toLocaleString()}</p>
+      <p className="mb-4 font-mono text-2xl font-bold text-foreground">Rs. {total.toLocaleString()}</p>
       <ResponsiveContainer width="100%" height={220}>
         <PieChart>
           <Pie data={data} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={4} dataKey="value">
