@@ -332,6 +332,7 @@ export type Database = {
       vehicles: {
         Row: {
           brake_fluid_capacity: string | null
+          category: string
           chassis_number: string | null
           color: string | null
           coolant_capacity: string | null
@@ -358,6 +359,7 @@ export type Database = {
         }
         Insert: {
           brake_fluid_capacity?: string | null
+          category?: string
           chassis_number?: string | null
           color?: string | null
           coolant_capacity?: string | null
@@ -384,6 +386,7 @@ export type Database = {
         }
         Update: {
           brake_fluid_capacity?: string | null
+          category?: string
           chassis_number?: string | null
           color?: string | null
           coolant_capacity?: string | null

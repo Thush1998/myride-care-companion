@@ -174,7 +174,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
 
         {/* Update Odometer Dialog */}
         <Dialog open={odoDialogOpen} onOpenChange={setOdoDialogOpen}>
-          <DialogContent className="bg-card border-border max-w-sm">
+          <DialogContent className="bg-card border-border max-w-sm" aria-describedby={undefined}>
             <DialogHeader><DialogTitle className="font-display text-primary">Update Odometer</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">Current reading: <span className="font-mono font-semibold text-foreground">{Number(vehicle.current_odometer).toLocaleString()} km</span></p>
@@ -194,7 +194,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
 
         {/* Edit Vehicle Dialog */}
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
-          <DialogContent className="bg-card border-border">
+          <DialogContent className="bg-card border-border" aria-describedby={undefined}>
             <DialogHeader><DialogTitle className="font-display text-primary">Edit Vehicle</DialogTitle></DialogHeader>
             <form onSubmit={handleEditSubmit} className="space-y-3">
               <div><Label className="text-muted-foreground">Nickname</Label><Input value={editForm.nickname} onChange={e => setEditForm(f => ({ ...f, nickname: e.target.value }))} className="bg-input border-border" /></div>
