@@ -3,7 +3,7 @@ import { Vehicle, useDeleteVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import autoDocLogo from '@/assets/autodoc-logo.png';
+import driveDocLogo from '@/assets/drivedoc-logo.png';
 
 interface AppSidebarProps {
   vehicles: Vehicle[];
