@@ -61,7 +61,10 @@ export const useAddFuelLog = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_: any, vars: any) => qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] }),
+    onSuccess: (_: any, vars: any) => {
+      qc.invalidateQueries({ queryKey: ['fuel_logs', vars.vehicle_id] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
   });
 };
 
@@ -78,7 +81,10 @@ export const useUpdateFuelLog = () => {
       if (error) throw error;
       return vehicleId;
     },
-    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
+    onSuccess: (vehicleId: string) => {
+      qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
   });
 };
 
@@ -90,6 +96,9 @@ export const useDeleteFuelLog = () => {
       if (error) throw error;
       return vehicleId;
     },
-    onSuccess: (vehicleId: string) => qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] }),
+    onSuccess: (vehicleId: string) => {
+      qc.invalidateQueries({ queryKey: ['fuel_logs', vehicleId] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
   });
 };
