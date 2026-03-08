@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import type { VehicleCategory } from '@/lib/vehicleCategories';
 
 export type Vehicle = {
   id: string;
@@ -18,6 +19,7 @@ export type Vehicle = {
   paint_code: string | null;
   oil_grade: string | null;
   tire_pressure_psi: number | null;
+  category: VehicleCategory;
   created_at: string;
   updated_at: string;
 };
@@ -33,7 +35,7 @@ export const useVehicles = () => {
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Vehicle[];
+      return (data as unknown as Vehicle[]).map(v => ({ ...v, category: (v as any).category || 'car' }));
     },
     enabled: !!user,
   });
@@ -43,7 +45,7 @@ export const useAddVehicle = () => {
   const qc = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string }) => {
+    mutationFn: async (vehicle: { make: string; model: string; year: number; plate_no: string; color?: string; nickname?: string; image_url?: string; category?: string }) => {
       const { data, error } = await supabase
         .from('vehicles')
         .insert({ ...vehicle, user_id: user!.id } as any)

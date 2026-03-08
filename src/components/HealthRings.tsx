@@ -2,20 +2,13 @@ import { useState } from 'react';
 import { ServiceLog } from '@/hooks/useServiceLogs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format, addDays, differenceInDays } from 'date-fns';
+import { getTrackedParts, type VehicleCategory } from '@/lib/vehicleCategories';
 
 interface HealthRingsProps {
   services: ServiceLog[];
   currentOdometer: number;
+  category?: VehicleCategory;
 }
-
-const TRACKED_PARTS = [
-  { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000, timeIntervalDays: 180 },
-  { key: 'brake pad', label: 'Brake Pads', defaultInterval: 40000, timeIntervalDays: 730 },
-  { key: 'timing belt', label: 'Timing Belt', defaultInterval: 100000, timeIntervalDays: 1825 },
-  { key: 'gear oil', label: 'Gear Oil', defaultInterval: 40000, timeIntervalDays: 730 },
-  { key: 'tire', label: 'Tires', defaultInterval: 50000, timeIntervalDays: 1095 },
-  { key: 'air filter', label: 'Air Filter', defaultInterval: 20000, timeIntervalDays: 365 },
-];
 
 const CircularRing = ({
   percent, label, color, lastDate, lastPrice, predictedNext, brand, hasData,
@@ -122,7 +115,8 @@ const CircularRing = ({
   );
 };
 
-const HealthRings = ({ services, currentOdometer }: HealthRingsProps) => {
+const HealthRings = ({ services, currentOdometer, category = 'car' }: HealthRingsProps) => {
+  const TRACKED_PARTS = getTrackedParts(category);
   // Estimate avg daily km from services
   const allOdos = services
     .filter(s => s.odometer_at_service && s.odometer_at_service > 0)

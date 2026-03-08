@@ -1,22 +1,16 @@
 import { CalendarClock, ChevronRight } from 'lucide-react';
 import { ServiceLog } from '@/hooks/useServiceLogs';
 import { differenceInDays, addDays, format } from 'date-fns';
+import { FORECAST_TRACKED, type VehicleCategory } from '@/lib/vehicleCategories';
 
 interface MaintenanceForecastProps {
   services: ServiceLog[];
   currentOdometer: number;
+  category?: VehicleCategory;
 }
 
-const TRACKED = [
-  { key: 'engine oil', label: 'Oil Change', defaultInterval: 5000, timeDays: 180 },
-  { key: 'brake pad', label: 'Brake Pads', defaultInterval: 40000, timeDays: 730 },
-  { key: 'timing belt', label: 'Timing Belt', defaultInterval: 100000, timeDays: 1825 },
-  { key: 'air filter', label: 'Air Filter', defaultInterval: 20000, timeDays: 365 },
-  { key: 'tire', label: 'Tires', defaultInterval: 50000, timeDays: 1095 },
-  { key: 'gear oil', label: 'Gear Oil', defaultInterval: 40000, timeDays: 730 },
-];
-
-const MaintenanceForecast = ({ services, currentOdometer }: MaintenanceForecastProps) => {
+const MaintenanceForecast = ({ services, currentOdometer, category = 'car' }: MaintenanceForecastProps) => {
+  const TRACKED = FORECAST_TRACKED[category];
   // Estimate avg daily km
   const allOdos = services
     .filter(s => s.odometer_at_service && s.odometer_at_service > 0)

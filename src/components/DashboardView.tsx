@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { Gauge, Wrench, AlertTriangle, TrendingUp, Car, Pencil, Camera, Activity, DollarSign } from 'lucide-react';
+import { getCategoryIcon, getCategoryLabel, VEHICLE_CATEGORIES, type VehicleCategory } from '@/lib/vehicleCategories';
 import { calcCostPerKm } from '@/lib/fuelCalcs';
 import { Vehicle, useUpdateVehicle } from '@/hooks/useVehicles';
 import { useServiceLogs } from '@/hooks/useServiceLogs';
@@ -11,6 +12,7 @@ import { useUpdateOdometer } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -42,7 +44,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
   const updateVehicle = useUpdateVehicle();
   const [newOdometer, setNewOdometer] = useState('');
   const [editOpen, setEditOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '' });
+  const [editForm, setEditForm] = useState({ make: '', model: '', year: '', plate_no: '', color: '', nickname: '', category: 'car' as string });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [showScan, setShowScan] = useState(true);
   const [odoDialogOpen, setOdoDialogOpen] = useState(false);
@@ -93,6 +95,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
     setEditForm({
       make: vehicle.make, model: vehicle.model, year: String(vehicle.year),
       plate_no: vehicle.plate_no, color: vehicle.color || '', nickname: vehicle.nickname || '',
+      category: vehicle.category || 'car',
     });
     setEditOpen(true);
   };
@@ -104,6 +107,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
         id: vehicle.id, make: editForm.make.trim(), model: editForm.model.trim(),
         year: parseInt(editForm.year), plate_no: editForm.plate_no.trim(),
         color: editForm.color.trim() || undefined, nickname: editForm.nickname.trim() || undefined,
+        category: editForm.category,
       });
       toast.success('Vehicle updated!');
       setEditOpen(false);
@@ -137,7 +141,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <img src={vehicle.image_url} alt={vehicle.make} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center">
-                  <Car className="h-16 w-16 text-muted-foreground/30" />
+                  <span className="text-4xl">{getCategoryIcon(vehicle.category)}</span>
                 </div>
               )}
               <button onClick={() => photoRef.current?.click()} disabled={uploadingPhoto}
@@ -150,7 +154,7 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
               <div>
                 {vehicle.nickname && <p className="mb-1 font-display text-xs font-bold tracking-wider text-primary uppercase">{vehicle.nickname}</p>}
                 <h2 className="text-2xl font-bold text-foreground">{vehicle.make} {vehicle.model}</h2>
-                <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''}</p>
+                <p className="text-muted-foreground">{vehicle.year} · {vehicle.plate_no}{vehicle.color ? ` · ${vehicle.color}` : ''} · {getCategoryLabel(vehicle.category)}</p>
               </div>
               <div className="flex items-start gap-3 self-end sm:self-auto">
                 <div className="text-right">
@@ -203,6 +207,17 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
                 <div><Label className="text-muted-foreground">Plate No *</Label><Input value={editForm.plate_no} onChange={e => setEditForm(f => ({ ...f, plate_no: e.target.value }))} className="bg-input border-border" /></div>
               </div>
               <div><Label className="text-muted-foreground">Color</Label><Input value={editForm.color} onChange={e => setEditForm(f => ({ ...f, color: e.target.value }))} className="bg-input border-border" /></div>
+              <div>
+                <Label className="text-muted-foreground">Category</Label>
+                <Select value={editForm.category} onValueChange={v => setEditForm(f => ({ ...f, category: v }))}>
+                  <SelectTrigger className="bg-input border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {VEHICLE_CATEGORIES.map(c => (
+                      <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <Button type="submit" disabled={updateVehicle.isPending} className="w-full gradient-cyan text-primary-foreground font-semibold">
                 {updateVehicle.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
@@ -226,13 +241,14 @@ const DashboardView = ({ vehicle }: DashboardViewProps) => {
           services={services || []}
           currentOdometer={vehicle.current_odometer}
           vehicleName={`${vehicle.make} ${vehicle.model}`}
+          category={vehicle.category}
         />
 
         {/* Component Health Rings */}
-        <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} />
+        <HealthRings services={services || []} currentOdometer={vehicle.current_odometer} category={vehicle.category} />
 
         {/* Maintenance Forecast */}
-        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} />
+        <MaintenanceForecast services={services || []} currentOdometer={vehicle.current_odometer} category={vehicle.category} />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5 sm:gap-4">

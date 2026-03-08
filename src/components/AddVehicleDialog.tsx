@@ -3,25 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddVehicle } from '@/hooks/useVehicles';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Camera, ChevronRight, ChevronLeft, Check, AlertTriangle, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { VEHICLE_CATEGORIES, getTrackedParts, type VehicleCategory } from '@/lib/vehicleCategories';
 
 interface AddVehicleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const TRACKED_COMPONENTS = [
-  { key: 'engine oil', label: 'Engine Oil', defaultInterval: 5000 },
-  { key: 'timing belt', label: 'Timing Belt', defaultInterval: 100000 },
-  { key: 'gear oil', label: 'Gear Oil', defaultInterval: 40000 },
-  { key: 'brake pad', label: 'Brake Pads', defaultInterval: 40000 },
-  { key: 'air filter', label: 'Air Filter', defaultInterval: 20000 },
-  { key: 'tire', label: 'Tires', defaultInterval: 50000 },
-];
 
 const INSPECTION_ITEMS = [
   { key: 'oil_leaks', label: 'No Oil Leaks' },
@@ -54,13 +47,11 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [odometer, setOdometer] = useState('');
+  const [category, setCategory] = useState<VehicleCategory>('car');
 
-  // Step 2: Component baselines
-  const [components, setComponents] = useState<Record<string, ComponentEntry>>(() => {
-    const init: Record<string, ComponentEntry> = {};
-    TRACKED_COMPONENTS.forEach(c => { init[c.key] = { lastMileage: '', status: 'unknown' }; });
-    return init;
-  });
+  // Step 2: Component baselines (dynamic based on category)
+  const trackedComponents = getTrackedParts(category);
+  const [components, setComponents] = useState<Record<string, ComponentEntry>>({});
 
   // Step 3: Inspection checklist
   const [inspections, setInspections] = useState<Record<string, boolean>>(() => {
@@ -153,10 +144,8 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
   const resetForm = () => {
     setStep(0);
     setMake(''); setModel(''); setYear(''); setPlateNo(''); setColor(''); setNickname('');
-    setImageFile(null); setImagePreview(null); setOdometer('');
-    const compInit: Record<string, ComponentEntry> = {};
-    TRACKED_COMPONENTS.forEach(c => { compInit[c.key] = { lastMileage: '', status: 'unknown' }; });
-    setComponents(compInit);
+    setImageFile(null); setImagePreview(null); setOdometer(''); setCategory('car');
+    setComponents({});
     const inspInit: Record<string, boolean> = {};
     INSPECTION_ITEMS.forEach(i => { inspInit[i.key] = false; });
     setInspections(inspInit);
@@ -184,6 +173,7 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
         make: make.trim(), model: model.trim(), year: parseInt(year),
         plate_no: plateNo.trim(), color: color.trim() || undefined,
         nickname: nickname.trim() || undefined, image_url: imageUrl,
+        category,
       });
 
       // Update odometer
@@ -193,8 +183,8 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
 
       // Insert initial service logs for known components
       const serviceLogs: any[] = [];
-      TRACKED_COMPONENTS.forEach(tc => {
-        const comp = components[tc.key];
+      trackedComponents.forEach(tc => {
+        const comp = components[tc.key] || { lastMileage: '', status: 'unknown' };
         if (comp.status === 'known' && comp.lastMileage) {
           serviceLogs.push({
             vehicle_id: vehicleData.id,
@@ -285,6 +275,19 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
               <div><Label className="text-muted-foreground">Color</Label><Input value={color} onChange={e => setColor(e.target.value)} placeholder="Silver" className="bg-input border-border" /></div>
               <div><Label className="text-muted-foreground">Odometer (km) *</Label><Input type="number" value={odometer} onChange={e => setOdometer(e.target.value)} placeholder="150000" className="bg-input border-border" /></div>
             </div>
+            <div>
+              <Label className="text-muted-foreground">Vehicle Category *</Label>
+              <Select value={category} onValueChange={(v) => setCategory(v as VehicleCategory)}>
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {VEHICLE_CATEGORIES.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={() => setStep(1)} disabled={!canProceedStep1} className="w-full gap-2 gradient-cyan text-primary-foreground font-semibold">
               Next: Service History <ChevronRight className="h-4 w-4" />
             </Button>
@@ -296,8 +299,8 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
           <div className="space-y-4 animate-fade-in">
             <p className="text-xs text-muted-foreground">Set the last known service mileage for each component, or mark as "Needs Inspection" if unknown.</p>
             <div className="space-y-3">
-              {TRACKED_COMPONENTS.map(tc => {
-                const comp = components[tc.key];
+              {trackedComponents.map(tc => {
+                const comp = components[tc.key] || { lastMileage: '', status: 'unknown' };
                 return (
                   <div key={tc.key} className={`rounded-lg p-3 transition-colors ${comp.status === 'unknown' ? 'bg-accent/10 border border-accent/30' : comp.lastMileage ? 'bg-primary/5 border border-primary/20' : 'bg-secondary/30 border border-border'}`}>
                     <div className="flex items-center justify-between mb-2">
