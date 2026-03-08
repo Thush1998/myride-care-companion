@@ -275,6 +275,19 @@ const AddVehicleDialog = ({ open, onOpenChange }: AddVehicleDialogProps) => {
               <div><Label className="text-muted-foreground">Color</Label><Input value={color} onChange={e => setColor(e.target.value)} placeholder="Silver" className="bg-input border-border" /></div>
               <div><Label className="text-muted-foreground">Odometer (km) *</Label><Input type="number" value={odometer} onChange={e => setOdometer(e.target.value)} placeholder="150000" className="bg-input border-border" /></div>
             </div>
+            <div>
+              <Label className="text-muted-foreground">Vehicle Category *</Label>
+              <Select value={category} onValueChange={(v) => setCategory(v as VehicleCategory)}>
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {VEHICLE_CATEGORIES.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.icon} {c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={() => setStep(1)} disabled={!canProceedStep1} className="w-full gap-2 gradient-cyan text-primary-foreground font-semibold">
               Next: Service History <ChevronRight className="h-4 w-4" />
             </Button>
