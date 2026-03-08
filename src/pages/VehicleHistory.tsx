@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Wrench, Calendar, DollarSign, Gauge, Phone, ChevronRight, CalendarClock, Image as ImageIcon } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import driveDocLogo from '@/assets/drivedoc-logo.png';
