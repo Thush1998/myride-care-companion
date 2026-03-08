@@ -55,7 +55,8 @@ const MiniRing = ({ percent, label, hasData }: { percent: number; label: string;
 
 const VehicleHistory = () => {
   const [searchParams] = useSearchParams();
-  const vehicleId = searchParams.get('v');
+  const { vehicleId: routeVehicleId } = useParams<{ vehicleId: string }>();
+  const vehicleId = routeVehicleId || searchParams.get('v');
   const contactPhone = searchParams.get('phone');
   const [vehicle, setVehicle] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
