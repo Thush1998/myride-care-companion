@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Wrench, Calendar, DollarSign, Gauge } from 'lucide-react';
-import autodocLogo from '@/assets/autodoc-logo.png';
+import driveDocLogo from '@/assets/drivedoc-logo.png';
 
 const VehicleHistory = () => {
   const [searchParams] = useSearchParams();
