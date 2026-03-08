@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { Wrench, Calendar, DollarSign, Gauge, Phone, ChevronRight, CalendarClock, Image as ImageIcon } from 'lucide-react';
 import { format, differenceInDays, addDays } from 'date-fns';
 import driveDocLogo from '@/assets/drivedoc-logo.png';
@@ -68,15 +67,21 @@ const VehicleHistory = () => {
   useEffect(() => {
     if (!vehicleId) { setError('No vehicle specified'); setLoading(false); return; }
     const load = async () => {
-      const [vRes, sRes, mRes] = await Promise.all([
-        supabase.from('vehicles').select('*').eq('id', vehicleId).single(),
-        supabase.from('service_logs').select('*').eq('vehicle_id', vehicleId).order('service_date', { ascending: false }),
-        supabase.from('modifications').select('*').eq('vehicle_id', vehicleId).order('mod_date', { ascending: false }),
-      ]);
-      if (!vRes.data) { setError('Vehicle not found'); setLoading(false); return; }
-      setVehicle(vRes.data);
-      setServices(sRes.data || []);
-      setMods(mRes.data || []);
+      try {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        const res = await fetch(
+          `${supabaseUrl}/functions/v1/public-vehicle?id=${vehicleId}`,
+          { headers: { 'apikey': anonKey, 'Content-Type': 'application/json' } }
+        );
+        if (!res.ok) { setError('Vehicle not found'); setLoading(false); return; }
+        const data = await res.json();
+        setVehicle(data.vehicle);
+        setServices(data.services || []);
+        setMods(data.modifications || []);
+      } catch (e) {
+        setError('Failed to load vehicle data');
+      }
       setLoading(false);
     };
     load();
