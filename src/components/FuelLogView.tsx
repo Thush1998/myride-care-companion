@@ -25,9 +25,12 @@ const FuelLogView = ({ vehicle }: FuelLogViewProps) => {
   const addLog = useAddFuelLog();
   const updateLog = useUpdateFuelLog();
   const deleteLog = useDeleteFuelLog();
+  const updateOdometer = useUpdateOdometer();
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm());
+  const [odoDialogOpen, setOdoDialogOpen] = useState(false);
+  const [newOdometer, setNewOdometer] = useState('');
 
   const totalLiters = logs?.reduce((sum, l) => sum + l.liters, 0) ?? 0;
   const avgKmPerL = calcKmPerLiter(logs || []);
