@@ -20,11 +20,12 @@ const AuthPage = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://myride-care-companion.vercel.app',
+        redirectTo: 'https://myride-care-companion.vercel.app/auth/callback',
+        flowType: 'pkce',
         queryParams: {
           prompt: 'select_account',
         },
-      },
+      } as any,
     });
     if (error) {
       console.error('[Auth] Google login error:', error);
