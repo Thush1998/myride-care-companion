@@ -15,14 +15,19 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
+    const redirectUrl = 'https://myride-care-companion.vercel.app';
+    console.log('[Auth] Starting Google OAuth redirect to:', redirectUrl);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account',
+        },
       },
     });
     if (error) {
-      console.error('Google login error:', error);
+      console.error('[Auth] Google login error:', error);
       toast.error(`Google login failed: ${error.message}`);
     }
   };
