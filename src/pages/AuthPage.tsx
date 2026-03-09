@@ -1,10 +1,19 @@
-import { Activity } from 'lucide-react';
+import { useState } from 'react';
+import { Activity, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import driveDocLogo from '@/assets/drivedoc-logo.png';
 
 const AuthPage = () => {
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -13,7 +22,41 @@ const AuthPage = () => {
       },
     });
     if (error) {
-      toast.error('Login failed. Please try again.');
+      console.error('Google login error:', error);
+      toast.error(`Google login failed: ${error.message}`);
+    }
+  };
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error('Please enter email and password.');
+      return;
+    }
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+    setLoading(true);
+    try {
+      if (mode === 'signup') {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        toast.success('Check your email to confirm your account!');
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success('Logged in successfully!');
+      }
+    } catch (err: any) {
+      console.error('Email auth error:', err);
+      toast.error(err.message || 'Authentication failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,12 +74,15 @@ const AuthPage = () => {
         <div className="glass-card neon-border w-full max-w-sm p-8">
           <div className="mb-6 text-center">
             <Activity className="mx-auto mb-3 h-10 w-10 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">Welcome Back</h2>
+            <h2 className="text-xl font-semibold text-foreground">
+              {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Sign in to access your diagnostics
+              {mode === 'login' ? 'Sign in to access your diagnostics' : 'Sign up to get started'}
             </p>
           </div>
 
+          {/* Google OAuth - redirect based */}
           <Button
             onClick={handleGoogleLogin}
             className="w-full gap-3 gradient-cyan text-primary-foreground font-semibold h-12 text-base hover:opacity-90 transition-opacity"
@@ -49,6 +95,65 @@ const AuthPage = () => {
             </svg>
             Continue with Google
           </Button>
+
+          {/* Divider */}
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground uppercase">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Email/Password form */}
+          <form onSubmit={handleEmailAuth} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm text-muted-foreground">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm text-muted-foreground">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <Button type="submit" disabled={loading} className="w-full h-11 font-semibold">
+              {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
+            </Button>
+          </form>
+
+          <p className="mt-5 text-center text-sm text-muted-foreground">
+            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+            <button
+              onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+              className="font-medium text-primary hover:underline"
+            >
+              {mode === 'login' ? 'Sign Up' : 'Sign In'}
+            </button>
+          </p>
         </div>
 
         <p className="max-w-xs text-center font-mono text-xs text-muted-foreground">
