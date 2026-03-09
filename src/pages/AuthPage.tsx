@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
 
   const handleGoogleLogin = async () => {
+    // Force redirect flow for mobile compatibility
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
