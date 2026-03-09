@@ -28,7 +28,7 @@ export const useModifications = (vehicleId: string | null) => {
         .eq('vehicle_id', vehicleId!)
         .order('mod_date', { ascending: false });
       if (error) throw error;
-      return data as Modification[];
+      return (data || []) as Modification[];
     },
     enabled: !!vehicleId,
   });

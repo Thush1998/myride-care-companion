@@ -31,7 +31,7 @@ export const useFuelLogs = (vehicleId: string | null) => {
         .eq('vehicle_id', vehicleId!)
         .order('fuel_date', { ascending: false });
       if (error) throw error;
-      return data as FuelLog[];
+      return (data || []) as FuelLog[];
     },
     enabled: !!vehicleId,
   });

@@ -26,7 +26,7 @@ export const useTrips = (vehicleId: string | null) => {
         .order('start_time', { ascending: false })
         .limit(20);
       if (error) throw error;
-      return data as Trip[];
+      return (data || []) as Trip[];
     },
     enabled: !!vehicleId,
   });

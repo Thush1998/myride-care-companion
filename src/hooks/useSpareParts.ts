@@ -27,7 +27,7 @@ export const useSpareParts = (vehicleId: string | null) => {
         .eq('vehicle_id', vehicleId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as SparePart[];
+      return (data || []) as SparePart[];
     },
     enabled: !!vehicleId,
   });

@@ -28,7 +28,7 @@ export const useDocuments = (vehicleId: string | null) => {
         .eq('vehicle_id', vehicleId!)
         .order('expiry_date', { ascending: true });
       if (error) throw error;
-      return data as Document[];
+      return (data || []) as Document[];
     },
     enabled: !!vehicleId,
   });

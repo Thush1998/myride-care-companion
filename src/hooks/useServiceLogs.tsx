@@ -28,7 +28,7 @@ export const useServiceLogs = (vehicleId: string | null) => {
         .eq('vehicle_id', vehicleId!)
         .order('service_date', { ascending: false });
       if (error) throw error;
-      return data as ServiceLog[];
+      return (data || []) as ServiceLog[];
     },
     enabled: !!vehicleId,
   });

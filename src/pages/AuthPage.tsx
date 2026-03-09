@@ -20,7 +20,7 @@ const AuthPage = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: 'https://myride-care-companion.vercel.app',
         queryParams: {
           prompt: 'select_account',
         },
@@ -48,7 +48,7 @@ const AuthPage = () => {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: { emailRedirectTo: 'https://myride-care-companion.vercel.app' },
         });
         if (error) throw error;
         toast.success('Check your email to confirm your account!');
